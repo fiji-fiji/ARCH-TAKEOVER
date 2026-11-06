@@ -1,0 +1,52 @@
+﻿== UBT: ParisBombMapEditor Win64 Development  (C:\Users\chemi\Dropbox\_CODE\PARIS MAP\unreal\ParisBombMap\ParisBombMap.uproject)
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" ParisBombMapEditor Win64 Development "-Project=C:\Users\chemi\Dropbox\_CODE\PARIS MAP\unreal\ParisBombMap\ParisBombMap.uproject" -WaitMutex -NoHotReload
+Log file: C:\Users\chemi\AppData\Local\UnrealBuildTool\Log.txt
+Determining max actions to execute in parallel (6 physical cores, 6 logical cores)
+  Executing up to 6 processes, one per physical core
+  Requested 1.5 GB memory per action, 4.94 GB available: limiting max parallel actions to 3
+Creating makefile for ParisBombMapEditor (no existing makefile)
+UbaServer - Listening on 0.0.0.0:1345
+UHT compiled-in object format Default
+Building ParisBombMapEditor...
+===== Toolchain Information =====
+Using ISPC compiler (D:\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35229 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+===== End Toolchain Information =====
+Using Unreal Build Accelerator local executor to run 24 action(s)
+  CPU 6 physical cores, 6 logical cores
+  Memory 15.94 GB physical, 23.59 GB/27.44 GB committed
+  UBA Storage capacity 40 GB
+[1/24] Compile [x64] SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.cpp
+[2/24] Compile Resource [x64] Default.rc2
+[3/24] Compile Resource [x64] Default.rc2
+[4/24] Compile [x64] BombActor.cpp
+[5/24] Compile [x64] BombGameMode.cpp
+[6/24] Compile [x64] BombGameState.cpp
+[7/24] Compile [x64] BombHUD.cpp
+[8/24] Compile [x64] BombSite.cpp
+[9/24] Compile [x64] BotController.cpp
+[10/24] Compile [x64] CalloutMarker.cpp
+[11/24] Compile [x64] FPSCharacter.cpp
+[12/24] Compile [x64] FPSPlayerController.cpp
+[13/24] Compile [x64] Module.ParisBombMap.gen.cpp
+[14/24] Compile [x64] ParisBombMap.cpp
+[15/24] Compile [x64] PerModuleInline.gen.cpp
+[16/24] Link [x64] UnrealEditor-ParisBombMap.lib
+[17/24] Link [x64] UnrealEditor-ParisBombMap.dll
+[18/24] Compile [x64] MapBuilderLibrary.cpp
+[19/24] Compile [x64] Module.ParisBombMapEditor.gen.cpp
+[20/24] Compile [x64] ParisBombMapEditor.cpp
+[21/24] Compile [x64] PerModuleInline.gen.cpp
+[22/24] Link [x64] UnrealEditor-ParisBombMapEditor.lib
+[23/24] Link [x64] UnrealEditor-ParisBombMapEditor.dll
+[24/24] WriteMetadata ParisBombMapEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 171.79 seconds
+Output binary: D:\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 211.55 seconds
+Trace written to file C:\Users\chemi\AppData\Local\UnrealBuildTool\Trace.uba with size 29.3kb
+== Build OK

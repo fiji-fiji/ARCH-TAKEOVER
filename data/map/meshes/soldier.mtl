@@ -1,0 +1,10 @@
+newmtl M_Uniform
+Kd 0.8 0.8 0.8
+newmtl M_Boot
+Kd 0.8 0.8 0.8
+newmtl M_Gear
+Kd 0.8 0.8 0.8
+newmtl M_Skin
+Kd 0.8 0.8 0.8
+newmtl M_GunBlack
+Kd 0.8 0.8 0.8

@@ -1,0 +1,13 @@
+# Unreal build products (regenerable)
+unreal/ParisBombMap/Binaries/
+unreal/ParisBombMap/Intermediate/
+unreal/ParisBombMap/Saved/
+unreal/ParisBombMap/DerivedDataCache/
+unreal/ParisBombMap/.vs/
+unreal/ParisBombMap/*.sln
+unreal/ParisBombMap/.vsconfig
+# generated Unreal content (rebuilt by tools/ue/build_level.ps1)
+unreal/ParisBombMap/Content/
+__pycache__
+data/_debug/
+data/raw/panoramax/img/
