@@ -133,9 +133,10 @@ The "Street View" layer, from open data only:
   ground line of sight to both wall ends and the middle crosses no footprint edge. On a 7×7 grid over
   the wall the photos are added greedily by the pixel density they add (near frames cover the
   shopfront, frames 20–40 m back and the panoramas cover the upper floors), up to 10 per wall.
-  Per texel (40 px/m) the best-scoring photo wins (density × incidence × frame-centre weight, with a
-  ×1.4 hysteresis so a new photo must be clearly better: fewer seams); holes are filled with the column
-  average; walls under 45 % coverage keep the procedural facade.
+  Per texel (90 px/m) the best-scoring photo wins (density × incidence × frame-centre weight, with a
+  ×1.4 hysteresis so a new photo must be clearly better: fewer seams); the photos of a wall are then exposure-matched
+  to the dominant one and blended with 0.35 m feathered seams; holes are filled with the column
+  average; walls under 45 % coverage keep the procedural facade. Panoramas are used at 8k.
 * **Atlas**: the walls of one building are shelf-packed into a 4096-wide JPEG (height = next power of
   two; the px/m is reduced until it fits). `index.json` records the pixel rectangle per wall index;
   `build_map.py` maps `z ∈ [0, h]` onto it (OBJ v = 0 at the bottom; Unreal flips v on import).

@@ -1,1 +1,1 @@
-{"r550452": {"atlas": "assets/facades/bld_r550452.jpg", "w": 1024, "h": 1024, "ppm": 40.0, "height": 21.9, "faces": {"6": {"x0": 0, "y0": 0, "x1": 510, "y1": 876, "coverage": 0.83, "photos": 7}, "7": {"x0": 510, "y0": 0, "x1": 910, "y1": 876, "coverage": 0.889, "photos": 7}}}}
+{"r550452": {"atlas": "assets/facades/bld_r550452.jpg", "w": 4096, "h": 2048, "ppm": 90.0, "height": 21.9, "faces": {"6": {"x0": 0, "y0": 0, "x1": 1147, "y1": 1971, "coverage": 0.83, "photos": 7}, "7": {"x0": 1147, "y0": 0, "x1": 2045, "y1": 1971, "coverage": 0.889, "photos": 7}}}}

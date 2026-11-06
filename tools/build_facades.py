@@ -30,7 +30,10 @@ FAC_DIR.mkdir(parents=True, exist_ok=True)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--only", default="")
-ap.add_argument("--ppm", type=float, default=40.0)
+ap.add_argument("--ppm", type=float, default=90.0)
+ap.add_argument("--feather", type=float, default=0.35, help="seam blend width in metres (0 = hard cuts)")
+ap.add_argument("--no-match", action="store_true", help="skip the per-photo exposure matching")
+ap.add_argument("--pano-width", type=int, default=8192, help="the 12k panoramas are kept at this width on disk")
 ap.add_argument("--pitch", type=float, default=3.3, help="campaign frame pitch (deg, + = up)")
 ap.add_argument("--debug", action="store_true", help="save the source photos with the projected wall outline (data/_debug/)")
 ap.add_argument("--cam-h", type=float, default=2.4)
@@ -201,7 +204,7 @@ print(f"{len(buildings)} buildings to texture, {len(rings)} footprints, {len(pic
 
 _cache = {}         # pic id -> np.uint8 (H, W, 3)
 _cache_order = []
-CACHE_MAX = 8
+CACHE_MAX = 6
 
 
 def load_image(pic):
@@ -210,10 +213,11 @@ def load_image(pic):
         return _cache[pid]
     path = fetch_panoramax.image_path(pic)
     im = Image.open(path)
-    if im.width > 6144:                      # the 12k panoramas: keep a 6k copy on disk
-        small = path.with_name(path.stem + "_6k.jpg")
+    PW = args.pano_width
+    if im.width > PW:                        # the 12k panoramas: keep a smaller copy on disk (memory)
+        small = path.with_name(path.stem + f"_{PW // 1024}k.jpg")
         if not small.exists():
-            im.convert("RGB").resize((6144, im.height * 6144 // im.width), Image.LANCZOS).save(small, quality=90)
+            im.convert("RGB").resize((PW, im.height * PW // im.width), Image.LANCZOS).save(small, quality=92)
         im = Image.open(small)
     arr = np.asarray(im.convert("RGB"))
     _cache[pid] = arr; _cache_order.append(pid)
@@ -229,6 +233,19 @@ def sample_bilinear(img, px, py):
     a = img[y0, x0].astype(np.float32); b = img[y0, x0 + 1].astype(np.float32)
     c = img[y0 + 1, x0].astype(np.float32); d = img[y0 + 1, x0 + 1].astype(np.float32)
     return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy
+
+
+def box_blur(m, r):
+    """Separable box blur (radius r texels) of a float32 2-D array, via cumulative sums; applied twice ~ Gaussian."""
+    if r <= 0:
+        return m
+    for _ in range(2):
+        for axis in (0, 1):
+            n = m.shape[axis]
+            c = np.cumsum(np.concatenate([np.zeros_like(np.take(m, [0], axis=axis)), m], axis=axis), axis=axis)
+            hi = np.clip(np.arange(n) + r + 1, 0, n); lo = np.clip(np.arange(n) - r, 0, n)
+            m = (np.take(c, hi, axis=axis) - np.take(c, lo, axis=axis)) / (hi - lo).reshape([-1 if a == axis else 1 for a in (0, 1)])
+    return m
 
 
 def project(pic, dims, X, Y, Z, nrm):
@@ -363,9 +380,11 @@ for bi, b in enumerate(buildings):
         Y = f["p"][1] + f["d"][1] * us[None, :] + np.zeros((hh, 1))
         Z = zs[:, None] + np.zeros((1, w))
         best = np.zeros((hh, w), np.float32)
+        label = np.full((hh, w), -1, np.int16)
         out = np.zeros((hh, w, 3), np.float32)
         used = set()
-        for pic in f["cands"]:
+        scores = []                                                # (candidate index, score map) for the blend pass
+        for ci, pic in enumerate(f["cands"]):
             try:
                 img = load_image(pic)
             except Exception as e:
@@ -388,9 +407,50 @@ for bi, b in enumerate(buildings):
             better = score > best * 1.4                            # hysteresis: a new photo must be clearly better (fewer seams)
             if not better.any():
                 continue
-            cols = sample_bilinear(img, np.where(better, px, 1.0), np.where(better, py, 1.0))
-            out[better] = cols[better]; best[better] = score[better]
-            used.add(pic["id"])
+            best[better] = score[better]; label[better] = ci
+            scores.append((ci, score))
+        cov = float((best > 0).mean())
+        if cov >= args.min_coverage and scores:
+            # ---- second pass: match every photo's exposure to the dominant one, then blend with feathered seams
+            owners = [ci for ci, sc in scores if (label == ci).any()]
+            areas = {ci: int((label == ci).sum()) for ci in owners}
+            ref = max(owners, key=lambda ci: areas[ci])
+            score_of = dict(scores)
+            r = int(round(args.feather * ppm))
+            gains = {ci: np.ones(3, np.float32) for ci in owners}
+            if not args.no_match and len(owners) > 1:
+                st = 4                                                 # subsampled grid for the statistics
+                Xs, Ys, Zs = X[::st, ::st], Y[::st, ::st], Z[::st, ::st]
+                ref_pic = f["cands"][ref]; ref_img = load_image(ref_pic)
+                rpx, rpy, rsc = project(ref_pic, (ref_img.shape[1], ref_img.shape[0]), Xs, Ys, Zs, f["nrm"])
+                rcols = sample_bilinear(ref_img, np.where(rsc > 0, rpx, 1.0), np.where(rsc > 0, rpy, 1.0))
+                for ci in owners:
+                    if ci == ref:
+                        continue
+                    pic = f["cands"][ci]; img = load_image(pic)
+                    cpx, cpy, csc = project(pic, (img.shape[1], img.shape[0]), Xs, Ys, Zs, f["nrm"])
+                    both = (rsc > 0) & (csc > 0)
+                    if both.sum() < 40:
+                        continue
+                    ccols = sample_bilinear(img, np.where(both, cpx, 1.0), np.where(both, cpy, 1.0))
+                    gains[ci] = np.clip(rcols[both].mean(0) / np.maximum(ccols[both].mean(0), 1.0), 0.7, 1.45).astype(np.float32)
+            acc = np.zeros((hh, w, 3), np.float32); norm = np.zeros((hh, w), np.float32)
+            for ci in owners:
+                pic = f["cands"][ci]; img = load_image(pic)
+                px, py, _ = project(pic, (img.shape[1], img.shape[0]), X, Y, Z, f["nrm"])
+                valid = score_of[ci] > 0
+                own = (label == ci).astype(np.float32)
+                wgt = (box_blur(own, r) if r > 0 else own) * valid
+                if not (wgt > 0).any():
+                    continue
+                cols = sample_bilinear(img, np.where(valid, px, 1.0), np.where(valid, py, 1.0))
+                acc += wgt[..., None] * (cols * gains[ci][None, None, :])
+                norm += wgt
+                used.add(pic["id"])
+            ok = norm > 1e-6
+            out[ok] = acc[ok] / norm[ok][:, None]
+            best = np.where(ok, best, 0.0)
+            del acc, norm, scores
         cov = float((best > 0).mean())
         if cov < args.min_coverage:
             continue
@@ -405,7 +465,7 @@ for bi, b in enumerate(buildings):
         sidecar(b["id"]).write_text("{}", encoding="utf-8")       # remember: nothing usable here
         continue
     name = f"bld_{b['id']}.jpg"
-    Image.fromarray(atlas).save(FAC_DIR / name, quality=88)
+    Image.fromarray(atlas).save(FAC_DIR / name, quality=90)
     index[b["id"]] = {"atlas": f"assets/facades/{name}", "w": atlas_w, "h": atlas_h, "ppm": round(ppm, 2), "height": h, "faces": entries}
     sidecar(b["id"]).write_text(json.dumps({b["id"]: index[b["id"]]}), encoding="utf-8")
     if len(sheet) < 12:

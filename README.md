@@ -33,8 +33,9 @@ That runs, in order:
 2. `tools/import_blender_assets.py` – (optional, needs Blender) exports the user-supplied Parisian building pack into
    `assets/models/parisian_block/` (the exported pieces are committed, so this only runs when the pack changes)
 3. `tools/build_facades.py` – the **real facades**: re-projects the City of Paris street photos
-   (Panoramax) onto every street-facing wall → `assets/facades/*.jpg` (≈ 15 min, downloads ≈ 1 GB of
-   photos the first time; `-SkipFacades` keeps the existing atlases)
+   (Panoramax) onto every street-facing wall at 90 px/m with exposure matching and feathered seams →
+   `assets/facades/*.jpg` (≈ 25 min on 3 shards: run `--shard k/3` three times; downloads ≈ 1 GB of photos the
+   first time; `-SkipFacades` keeps the existing atlases)
 4. `tools/build_map.py` – OSM + IGN heights + facade atlases + war-zone layer → `data/map/meshes/*.obj` +
    `data/map/level.json` (+ `data/preview_level.png`)
 5. `tools/ue/build_project.ps1` – compiles the C++ modules with UnrealBuildTool

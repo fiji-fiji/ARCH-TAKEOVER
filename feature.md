@@ -20,6 +20,7 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | D9 | Real building heights from IGN BD TOPO (French open data)            | ✅ done (611 of 938 buildings matched) |
 | D10| Real facades: street-level photos (Panoramax, City of Paris campaign) projected onto every street-facing wall | ✅ verified in game (232 buildings / 726 walls, `data/screenshot_facades.png`) |
 | D11| Real ground: IGN aerial orthophoto on roads and pavements, blended with asphalt detail | ✅ verified in game (`data/screenshot_ground.png`: real markings, zebra crossings) |
+| D12| Facade quality pass: 90 px/m (was 40), 8k panoramas (was 6k), exposure matching between the photos of a wall, feathered seams (0.35 m) | ✅ verified: 232 buildings / 726 walls at 89 px/m avg, 147 MB, `data/screenshot_facades_hd.png`, 110 FPS unchanged |
 | L1 | Playable zone 345 m × 415 m — classic 5v5 proportions                | ✅ done (enlarged at user request) |
 | L2 | Spawns: attackers at Rue Réaumur / Arts-et-Métiers, defenders at the front door | ✅ done |
 | L3 | Bomb sites: A = Nazareth / Passage du Vertbois, B = Square Émile-Chautemps | ✅ done |
@@ -169,6 +170,25 @@ as ortho × detail.
 **Notes:** the stitched sheet (525 × 595 m at 8 px/m) is resampled to 4096 × 4096 so Unreal builds mipmaps for
 it (a non-power-of-two texture had no mips and shimmered at grazing angles); the blend is ortho × (0.7 + 0.6 ×
 detail), a straight ×2 multiply looked blotchy. Verified on `data/screenshot_ground.png`.
+
+## D12. Facade quality pass — ✅
+**Why:** the user asked for Google Street View footage. Google's terms forbid downloading and re-using Street View
+imagery (and the 16k tile endpoint is their blocked scraping path), so the map keeps the open imagery (City of Paris
+survey on Panoramax, Etalab 2.0) and pushes it as far as it goes instead.
+**What:** `tools/build_facades.py` now projects at **90 px/m** (default was 40; the atlases were mostly 1024 px with the
+4096 cap untouched, so a 2.25× density = 4–5× the pixels), keeps the 12k campaign panoramas at **8k** on disk (was 6k),
+**matches the exposure** of every photo of a wall to the photo that owns most of it (per-channel gain on their overlap,
+clamped 0.7–1.45), and **feathers the seams**: the winner-take-all label map (hysteresis 1.4 as before) is box-blurred
+0.35 m per photo and the photos are blended by those weights, so cuts become short gradients with little ghosting.
+Memory stays flat (scores kept, samples accumulated on the fly; image cache 6). JPEG quality 90.
+**How:** `--ppm 90 --feather 0.35 --pano-width 8192` (defaults), `--no-match` to disable the gain matching; run
+`--force --shard k/3` three times in parallel (`data/_facade_logs/`), then `--merge-only` is implicit on a full run.
+**Test:** `data/_before/compare_*.jpg` / `crop_home.jpg` (same wall, old left / new right); the front-door shopfront
+sign is legible at 90 px/m. Then `build_map.py` + `build_level.ps1` (atlases newer than the .uassets re-import automatically)
+and an in-game screenshot.
+**Verified 2026-11-06:** 3 shards × 21–26 min (76 / 75 / 81 buildings, 3 086 photo uses); atlases now mostly 2048² and
+4096×2048 (99 + 59), 30 at 4096²; mean coverage 0.905 (unchanged); level re-import 80 s; `data/screenshot_facades_hd.png`
+shows legible shop signs down Rue Saint-Martin at 109.5 FPS (same as before the pass).
 
 ## L1. Playable zone — ✅
 **What:** 345 m × 415 m (x ∈ [−195, 150], y ∈ [−320, 95] around home), the proportions of a classic 5v5 bomb map,
