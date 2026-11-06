@@ -993,6 +993,7 @@ MATERIALS.update({
     "M_BrickRed":  {"color": [0.48, 0.26, 0.20], "roughness": 0.95},
     "M_SmokeDark": {"color": [0.22, 0.21, 0.20], "roughness": 1.0},
     "M_Fire":      {"color": [1.0, 0.45, 0.1], "roughness": 0.9, "emissive": [6.0, 1.6, 0.2]},
+    "M_Flash":     {"color": [1.0, 0.7, 0.3], "roughness": 1.0, "emissive": [40.0, 18.0, 4.0]},
 })
 
 

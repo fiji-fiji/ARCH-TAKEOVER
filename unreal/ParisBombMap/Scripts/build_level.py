@@ -459,6 +459,17 @@ for a in LEVEL["actors"]:
     actor.set_actor_label(a["name"])
     actor.set_folder_path(unreal.Name(a["tags"][0] if a["tags"] else "misc"))
     actor.set_editor_property("tags", [unreal.Name(t) for t in a["tags"]])
+    # U14: small things stop being drawn far away, tiny things cast no shadow (fewer draw calls, same look)
+    tags = set(a["tags"])
+    smc = actor.get_editor_property("static_mesh_component")
+    if "tree" in tags:
+        smc.set_editor_property("ld_max_draw_distance", 32000.0)
+    elif "barrier" in tags or a.get("mesh") in ("crater", "sandbags", "hedgehog", "jersey", "bench", "planter"):
+        smc.set_editor_property("ld_max_draw_distance", 15000.0)
+        if a.get("mesh") in ("crater", "barrier"):
+            smc.set_editor_property("cast_shadow", False)
+    elif "prop" in tags:
+        smc.set_editor_property("ld_max_draw_distance", 22000.0)
     placed += 1
     if placed % 200 == 0:
         log(f"placed {placed} actors")
@@ -526,10 +537,14 @@ sc.set_editor_property("atmosphere_sun_light", True)
 _sun_col = MOOD.get("sun_color", [255, 244, 224])
 sc.set_editor_property("light_color", unreal.Color(int(_sun_col[0]), int(_sun_col[1]), int(_sun_col[2]), 255))
 try:
-    sc.set_editor_property("dynamic_shadow_distance_movable_light", 25000.0)
-    sc.set_editor_property("cascade_distribution_exponent", 2.5)
-except Exception:
-    pass
+    sc.set_editor_property("dynamic_shadow_distance_movable_light", 30000.0)
+    sc.set_editor_property("dynamic_shadow_cascades", 4)
+    sc.set_editor_property("cascade_distribution_exponent", 3.2)
+    sc.set_editor_property("contact_shadow_length", 0.04)
+    sc.set_editor_property("shadow_bias", 0.4)
+    sc.set_editor_property("shadow_slope_bias", 0.4)
+except Exception as e:
+    warn(f"sun shadow settings: {e}")
 sky = spawn_class(unreal.SkyAtmosphere, unreal.Vector(0, 0, 0), rot_yaw(0))
 sky.set_actor_label("SkyAtmosphere")
 skylight = spawn_class(unreal.SkyLight, unreal.Vector(0, 0, 3000), rot_yaw(0))
@@ -573,6 +588,25 @@ try:
         settings.set_editor_property("override_color_contrast", True)
         _con = float(MOOD["contrast"])
         settings.set_editor_property("color_contrast", unreal.Vector4(_con, _con, _con, 1.0))
+    # U14 look: bloom, vignette, ambient occlusion, split-tone grading
+    for key, prop, kind in (("bloom", "bloom_intensity", "f"), ("vignette", "vignette_intensity", "f"),
+                            ("ao_intensity", "ambient_occlusion_intensity", "f"), ("ao_radius", "ambient_occlusion_radius", "f"),
+                            ("shadows_tint", "color_gain_shadows", "v4"), ("highlights_tint", "color_gain_highlights", "v4")):
+        if MOOD.get(key) is None:
+            continue
+        try:
+            settings.set_editor_property("override_" + prop, True)
+            v = MOOD[key]
+            settings.set_editor_property(prop, float(v) if kind == "f" else unreal.Vector4(v[0], v[1], v[2], 1.0))
+        except Exception as e:
+            warn(f"post process {prop}: {e}")
+    try:
+        settings.set_editor_property("override_motion_blur_amount", True)
+        settings.set_editor_property("motion_blur_amount", 0.0)
+        settings.set_editor_property("override_film_grain_intensity", True)
+        settings.set_editor_property("film_grain_intensity", 0.0)
+    except Exception as e:
+        warn(f"post process extras: {e}")
     pp.set_editor_property("settings", settings)
 except Exception as e:
     warn(f"post process: {e}")

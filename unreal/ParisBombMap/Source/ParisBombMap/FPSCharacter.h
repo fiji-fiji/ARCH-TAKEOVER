@@ -28,6 +28,8 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
 	// ---- components
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UCameraComponent> Camera;
@@ -36,6 +38,7 @@ public:
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> GunMesh3P;
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> GunMesh1P;    // seen by owner only: the held item
 	UPROPERTY(VisibleAnywhere) TObjectPtr<UPointLightComponent> MuzzleLight;
+	UPROPERTY(VisibleAnywhere) TObjectPtr<UStaticMeshComponent> MuzzleFlash;  // emissive plane shown for a few frames per shot
 
 	// ---- movement (cm/s; FPS Reborn: run by default, Shift walks quietly)
 	UPROPERTY(EditAnywhere, Category = "Movement") float RunSpeed = Weapons::RunSpeed * 100.f;
@@ -152,5 +155,19 @@ private:
 	float AppliedRecoilYaw = 0.f;
 	float NadeCooldownUntil = 0.f;
 	float ScopeBlend = 0.f;
+	// U14 feel: first-person weapon bob / sway / kick, smooth crouch camera
+	FVector GunBaseLoc = FVector(38.f, 17.f, -24.f);
+	FRotator GunBaseRot = FRotator(0.f, -4.f, 0.f);
+	float GunBaseScale = 0.6f;
+	float BobTime = 0.f;
+	float BobAmp = 0.f;
+	float KickBack = 0.f;
+	float SwayYaw = 0.f;
+	float SwayPitch = 0.f;
+	float LastCtrlYaw = 0.f;
+	float LastCtrlPitch = 0.f;
+	float CrouchCamOffset = 0.f;
+	float CamZ = 70.f;
+	float FlashOffTime = 0.f;
 	FRandomStream Rng;
 };

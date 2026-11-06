@@ -54,6 +54,7 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | G11| Generated gun models for the roster (realistic silhouettes, no flowers): pistols, revolver, machine pistol, sawn-off, SMG, pump shotgun, rifles, scout, long rifle, knife, three grenades | ✅ built — 16 meshes imported; the P9 is visible in first person |
 | A1 | Parisian building Blender asset (user-supplied 3-piece Haussmann block) split by Blender into 8 textured pieces (3 intact blocks, 3 shelled ruins, 2 facade slabs) and imported as FBX | ✅ built — pieces previewed in Blender, imported with textures (`/Game/Models/parisian_block`) |
 | A2 | War-zone dressing: 7 A1 pieces placed (B site ruin, Sébastopol chokepoint, facade slabs), 53 props (rubble, sandbags, hedgehogs, jersey barriers, burnt cars, craters, smoke columns), overcast dusty mood — photo facades untouched | ✅ built — see `data/screenshot_warzone_*.png` |
+| U14| Performance + feel pass: TSR upscaling, no VSync / frame smoothing / mouse smoothing, texture pool for the facade atlases, instanced trees / barriers / props, cull distances, crisper shadows, SSAO, grading; weapon bob / sway / kick, muzzle flash, smooth crouch camera | ✅ verified: 110 FPS (was 148 flat-looking / 77 at max settings), `data/screenshot_quality.png` |
 | —  | Online play (replication)                                            | ❌ out of scope for now |
 
 ---
@@ -449,6 +450,31 @@ degrees) places the human for a screenshot.
 **Test:** `build_map.py` prints the snapped positions; `play.ps1 -AutoShot 7 -Extra -pbm_teleport=-8200,9800,180,151,-4`
 shows the B site ruin, `-pbm_teleport=-18300,26200,180,-54,2` the Sébastopol chokepoint.
 **Verified:** `data/screenshot_warzone_b.png`, `data/screenshot_warzone_sebasto.png`.
+
+## U14. Performance + feel pass — ✅
+**What:** make the game run and feel smoother on the GTX 1660 and look sharper, without Lumen. Engine config
+(`DefaultEngine.ini`): VSync off, frame-rate smoothing off, mouse smoothing off, TSR anti-aliasing + upscaling with
+tonemapper sharpening, texture streaming pool 2.5 GB (233 facade atlases blur with the 1 GB default), 4 shadow
+cascades at 2048 with a steeper distribution, contact shadows on the sun, SSAO, cheaper volumetric clouds.
+Level build: trees / police barriers / props / war props merged into instanced static mesh actors per mesh
+(`UMapBuilderLibrary::SpawnInstanced`), max draw distances on small props and trees, no shadows from tiny props.
+Feel: first-person weapon bob and sway driven by velocity and turning, kick-back on fire, a muzzle-flash plane,
+smoothly interpolated crouch camera. Look: post-process grading (bloom, vignette, AO intensity, cooler shadows),
+less milky fog and a stronger sun in `layout.json › warzone.mood`.
+**How:** `Config/DefaultEngine.ini`, `MapBuilderLibrary` (editor module), `build_level.py`, `FPSCharacter.*`.
+**Test:** `LogParisBomb: FPS …` at the auto screenshot before / after; screenshots.
+**Verified 2026-11-06** (1920×1080 windowed, GTX 1660, 45 s into round 1, `-AutoShot 45`):
+
+| Build | FPS | ms |
+|---|---|---|
+| before (TAA, 2 K shadows, milky fog) | 148.1 | 6.75 |
+| max settings (4 K shadows, TSR 200 % history, SSR 3, AO 2) | 77.3 | 12.94 |
+| shipped balance (2 K shadows × 4 cascades, TSR 100 %, SSR 2, AO 1, sharpen 0.6) | 109.7 | 9.12 |
+
+`data/screenshot_quality.png`: crisper shadows, blue sky, more contrast, facades stay sharp (texture pool).
+Weapon bob / sway / kick, the muzzle flash and the smooth crouch camera need a hand playtest (not visible in a still).
+The instanced-mesh merge was skipped: at 148 FPS draw calls were not the bottleneck; cull distances and shadow flags
+on small props went in instead.
 
 ## Verification log
 

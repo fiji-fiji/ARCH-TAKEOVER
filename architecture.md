@@ -183,7 +183,11 @@ baked in from above (limitation).
   `r.GenerateMeshDistanceFields=False` (with Lumen every re-imported mesh costs a ≈ 13 s CPU distance-field
   build — 25 min after a full reimport), classic shadow maps, screen-space reflections, TAA; the sky light
   (real-time capture) provides the ambient term. Four values in `DefaultEngine.ini` switch Lumen + VSM + TSR
-  back on for a stronger card. Nanite enabled but meshes imported as regular static meshes. All lights are
+  back on for a stronger card. Nanite enabled but meshes imported as regular static meshes. U14 pass: TSR with
+  tonemapper sharpening, 2.5 GB texture streaming pool (the facade atlases), 4 shadow cascades at 2 K with contact
+  shadows, SSAO, bloom / vignette / split-tone grading from `layout.json › warzone.mood`, cheaper volumetric clouds,
+  no VSync / frame smoothing / mouse smoothing / motion blur; small props get max draw distances and tiny ones cast no
+  shadow. First-person feel lives in `AFPSCharacter::Tick` (bob, sway, kick, muzzle-flash plane, crouch camera). All lights are
   movable; no lightmass build is ever needed. Photo facades are plain base-colour textures (one JPEG atlas
   per building → `T_bld_<id>` / `M_Fac_<id>`), roughness 0.85.
 * Nav mesh: Recast with `RuntimeGeneration=Dynamic` (bots work even if the editor-time build is

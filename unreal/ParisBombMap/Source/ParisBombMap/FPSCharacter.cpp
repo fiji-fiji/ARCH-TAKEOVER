@@ -118,6 +118,19 @@ AFPSCharacter::AFPSCharacter()
 	MuzzleLight->SetAttenuationRadius(500.f);
 	MuzzleLight->SetCastShadows(false);
 
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> Plane(TEXT("/Engine/BasicShapes/Plane.Plane"));
+	MuzzleFlash = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MuzzleFlash"));
+	MuzzleFlash->SetupAttachment(Camera);
+	if (Plane.Succeeded()) MuzzleFlash->SetStaticMesh(Plane.Object);
+	MuzzleFlash->SetRelativeLocation(FVector(90.f, 17.f, -22.f));
+	MuzzleFlash->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));      // the plane's normal along X: faces the camera
+	MuzzleFlash->SetRelativeScale3D(FVector(0.14f));
+	MuzzleFlash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MuzzleFlash->SetOnlyOwnerSee(true);
+	MuzzleFlash->SetCastShadow(false);
+	MuzzleFlash->SetVisibility(false);
+	MuzzleFlash->SetCanEverAffectNavigation(false);
+
 	UCharacterMovementComponent* Move = GetCharacterMovement();
 	Move->MaxWalkSpeed = RunSpeed;
 	Move->MaxWalkSpeedCrouched = CrouchSpeed;
@@ -136,6 +149,8 @@ AFPSCharacter::AFPSCharacter()
 void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	if (UMaterialInterface* Flash = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_Flash.M_Flash"))) MuzzleFlash->SetMaterial(0, Flash);
+	CamZ = BaseEyeHeight;
 	ResetLoadout();
 	ApplyTeamVisuals();
 	ApplyHeldVisuals();
@@ -344,6 +359,10 @@ void AFPSCharacter::ApplyHeldVisuals()
 		GunMesh1P->SetRelativeRotation(Rot);
 		GunMesh1P->SetRelativeScale3D(FVector(Scale));
 		GunMesh1P->SetVisibility(true);
+		GunBaseLoc = Loc; GunBaseRot = Rot; GunBaseScale = Scale;
+		// the muzzle flash sits at the front of the held mesh
+		const FBoxSphereBounds B = M->GetBounds();
+		MuzzleFlash->SetRelativeLocation(Loc + Rot.RotateVector(FVector((B.Origin.X + B.BoxExtent.X) * Scale, 0.f, (B.Origin.Z + B.BoxExtent.Z * 0.2f) * Scale)));
 	}
 	else
 	{
@@ -470,6 +489,18 @@ void AFPSCharacter::SetFrozen(bool bInFrozen)
 	{
 		bFiring = false;
 	}
+}
+
+void AFPSCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+	CrouchCamOffset += ScaledHalfHeightAdjust;      // the capsule dropped instantly: the camera catches up smoothly
+}
+
+void AFPSCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+	CrouchCamOffset -= ScaledHalfHeightAdjust;
 }
 
 float AFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -738,7 +769,15 @@ void AFPSCharacter::FireOnce(float ExtraSpreadDeg)
 	{
 		MuzzleLight->SetIntensity(D.bSilenced ? 800.f : 4000.f);
 		MuzzleOffTime = Now + 0.04f;
+		if (!bIsBot && !D.bSilenced)
+		{
+			MuzzleFlash->SetVisibility(true);
+			MuzzleFlash->SetRelativeRotation(FRotator(90.f, 0.f, Rng.FRandRange(0.f, 360.f)));
+			MuzzleFlash->SetRelativeScale3D(FVector(0.09f + 0.08f * FMath::Min(1.f, D.DmgBody / 50.f)) * Rng.FRandRange(0.8f, 1.2f));
+			FlashOffTime = Now + 0.045f;
+		}
 	}
+	if (!bIsBot) KickBack = FMath::Min(KickBack + (D.bMelee ? 4.f : 1.5f + D.Sustained * 120.f), 7.f);
 }
 
 void AFPSCharacter::FireHitscan(const FWeaponDef& D, float SpreadRad, const FVector& Start, const FRotator& Aim)
@@ -901,6 +940,35 @@ void AFPSCharacter::Tick(float DeltaSeconds)
 		const float Fov = FMath::Lerp(BaseFov, Def && Def->HasScope() ? Def->ScopeFov : BaseFov, ScopeBlend);
 		if (Camera && !FMath::IsNearlyEqual(Camera->FieldOfView, Fov, 0.01f)) Camera->SetFieldOfView(Fov);
 		if (GunMesh1P) GunMesh1P->SetVisibility(ScopeBlend < 0.5f && Held != EHeldSlot::Bomb ? true : (Held == EHeldSlot::Bomb));
+		if (Now >= FlashOffTime) MuzzleFlash->SetVisibility(false);
+
+		// ---- first-person feel: bob with the steps, sway against the turn, kick on fire
+		const float Speed = GetVelocity().Size2D();
+		const bool bOnGround = GetCharacterMovement()->IsMovingOnGround();
+		const float AmpTarget = bOnGround ? FMath::Clamp(Speed / RunSpeed, 0.f, 1.f) * (bIsCrouched ? 0.5f : 1.f) * (bWalking ? 0.6f : 1.f) : 0.f;
+		BobAmp = FMath::FInterpTo(BobAmp, AmpTarget, DeltaSeconds, 8.f);
+		BobTime += DeltaSeconds * (6.0f + 7.0f * FMath::Clamp(Speed / RunSpeed, 0.f, 1.f));
+		const float Breath = FMath::Sin(Now * 1.6f) * 0.12f;
+		FVector Bob(0.f, FMath::Sin(BobTime) * 1.1f * BobAmp, (FMath::Sin(BobTime * 2.f) * 0.55f - 0.35f) * BobAmp + Breath);
+		if (bScoped) Bob *= 0.15f;
+		FRotator Ctrl = GetControlRotation();
+		const float DYaw = FRotator::NormalizeAxis(Ctrl.Yaw - LastCtrlYaw), DPitch = FRotator::NormalizeAxis(Ctrl.Pitch - LastCtrlPitch);
+		LastCtrlYaw = Ctrl.Yaw; LastCtrlPitch = Ctrl.Pitch;
+		const float Dt = FMath::Max(DeltaSeconds, 1e-3f);
+		SwayYaw = FMath::FInterpTo(SwayYaw, FMath::Clamp(-DYaw / Dt * 0.012f, -4.f, 4.f), DeltaSeconds, 10.f);
+		SwayPitch = FMath::FInterpTo(SwayPitch, FMath::Clamp(DPitch / Dt * 0.010f, -3.f, 3.f), DeltaSeconds, 10.f);
+		KickBack = FMath::FInterpTo(KickBack, 0.f, DeltaSeconds, 16.f);
+		if (GunMesh1P && GunMesh1P->IsVisible())
+		{
+			const FVector Loc = GunBaseLoc + Bob + FVector(-KickBack, SwayYaw * 0.25f, -FMath::Abs(SwayPitch) * 0.1f);
+			const FRotator Rot = GunBaseRot + FRotator(KickBack * 1.6f + SwayPitch * 0.6f, SwayYaw * 0.9f, SwayYaw * 0.5f);
+			GunMesh1P->SetRelativeLocation(Loc);
+			GunMesh1P->SetRelativeRotation(Rot);
+		}
+		// smooth crouch camera: the capsule jump is absorbed, the eye settles lower
+		CrouchCamOffset = FMath::FInterpTo(CrouchCamOffset, 0.f, DeltaSeconds, 10.f);
+		CamZ = FMath::FInterpTo(CamZ, bIsCrouched ? 46.f : 70.f, DeltaSeconds, 10.f);
+		if (Camera) Camera->SetRelativeLocation(FVector(0.f, 0.f, CamZ + CrouchCamOffset + Bob.Z * 0.35f));
 	}
 
 	// footsteps: one every 1.7 m on the ground (quieter when crouched or walking)

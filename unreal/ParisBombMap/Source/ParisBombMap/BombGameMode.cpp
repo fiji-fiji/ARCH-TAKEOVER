@@ -26,6 +26,9 @@
 #include "UnrealClient.h"
 #include "NavigationSystem.h"
 
+extern ENGINE_API float GAverageFPS;
+extern ENGINE_API float GAverageMS;
+
 static const TCHAR* BotNames[] = {
 	TEXT("Pierre"), TEXT("Amina"), TEXT("Lucas"), TEXT("Chloe"), TEXT("Karim"), TEXT("Manon"), TEXT("Theo"),
 	TEXT("Ines"), TEXT("Nico"), TEXT("Sofia"), TEXT("Hugo"), TEXT("Lea"), TEXT("Yanis"), TEXT("Zoe")
@@ -707,6 +710,7 @@ void ABombGameMode::Tick(float DeltaSeconds)
 			bAutoShotTaken = true;
 			FScreenshotRequest::RequestScreenshot(FString(TEXT("autoshot.png")), false, false);
 			UE_LOG(LogParisBomb, Log, TEXT("Auto screenshot taken at %.1fs; alive %d v %d"), T, S->AliveAttackers, S->AliveDefenders);
+			UE_LOG(LogParisBomb, Log, TEXT("FPS %.1f (%.2f ms/frame, averaged over the last seconds)"), GAverageFPS, GAverageMS);
 			for (AFPSCharacter* C : Characters)
 			{
 				if (!C) continue;
