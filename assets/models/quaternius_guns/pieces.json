@@ -1,0 +1,141 @@
+{
+ "source": "Quaternius Ultimate Gun Pack (CC0, https://quaternius.com)",
+ "materials": {
+  "Black": "M_GunBlack",
+  "Black2": "M_GunBlack",
+  "DarkMetal": "M_DarkMetal",
+  "Metal": "M_Metal",
+  "LightMetal": "M_LightMetal",
+  "LightMetal2": "M_LightMetal",
+  "Grey": "M_GunGrey",
+  "Wood": "M_Wood",
+  "DarkWood": "M_DarkWood",
+  "Main": "M_GunGrey",
+  "MainDark": "M_GunBlack",
+  "MainLight": "M_DarkMetal",
+  "Green": "M_GunGreen",
+  "Glass": "M_Glass"
+ },
+ "pieces": {
+  "gun_p9": {
+   "fbx": "gun_p9.fbx",
+   "size": [
+    0.218,
+    0.039,
+    0.139
+   ],
+   "polys": 487,
+   "source": "Pistol_1"
+  },
+  "gun_sp7": {
+   "fbx": "gun_sp7.fbx",
+   "size": [
+    0.404,
+    0.04,
+    0.155
+   ],
+   "polys": 977,
+   "source": "Pistol_3 + Accessories/Silencer_2"
+  },
+  "gun_mp11": {
+   "fbx": "gun_mp11.fbx",
+   "size": [
+    0.357,
+    0.045,
+    0.229
+   ],
+   "polys": 430,
+   "source": "SubmachineGun_4"
+  },
+  "gun_r44": {
+   "fbx": "gun_r44.fbx",
+   "size": [
+    0.277,
+    0.041,
+    0.132
+   ],
+   "polys": 621,
+   "source": "Revolver_2"
+  },
+  "gun_so12": {
+   "fbx": "gun_so12.fbx",
+   "size": [
+    0.627,
+    0.072,
+    0.173
+   ],
+   "polys": 451,
+   "source": "Shotgun_SawedOff"
+  },
+  "gun_smg9": {
+   "fbx": "gun_smg9.fbx",
+   "size": [
+    0.687,
+    0.054,
+    0.314
+   ],
+   "polys": 585,
+   "source": "SubmachineGun_2"
+  },
+  "gun_ps12": {
+   "fbx": "gun_ps12.fbx",
+   "size": [
+    0.887,
+    0.042,
+    0.16
+   ],
+   "polys": 599,
+   "source": "Shotgun_1"
+  },
+  "gun_ar7": {
+   "fbx": "gun_ar7.fbx",
+   "size": [
+    0.922,
+    0.033,
+    0.272
+   ],
+   "polys": 616,
+   "source": "AssaultRifle_2"
+  },
+  "gun_ar7s": {
+   "fbx": "gun_ar7s.fbx",
+   "size": [
+    1.195,
+    0.056,
+    0.272
+   ],
+   "polys": 737,
+   "source": "AssaultRifle_5 + Accessories/Silencer_1"
+  },
+  "gun_sr30": {
+   "fbx": "gun_sr30.fbx",
+   "size": [
+    1.014,
+    0.073,
+    0.216
+   ],
+   "polys": 625,
+   "source": "SniperRifle_4"
+  },
+  "gun_lr50": {
+   "fbx": "gun_lr50.fbx",
+   "size": [
+    1.014,
+    0.2,
+    0.304
+   ],
+   "polys": 797,
+   "source": "SniperRifle_5"
+  },
+  "gun_knife": {
+   "fbx": "gun_knife.fbx",
+   "size": [
+    0.292,
+    0.033,
+    0.059
+   ],
+   "polys": 120,
+   "source": "Accessories/Bayonet"
+  }
+ }
+}

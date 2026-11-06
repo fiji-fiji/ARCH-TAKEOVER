@@ -48,8 +48,7 @@ void AWeaponPickup::Init(const FGunState& InGun, const FVector& Forward)
 	Gun.SprayIndex = 0;
 	if (Gun.Def)
 	{
-		const FString Path = FString::Printf(TEXT("/Game/Meshes/%s.%s"), *Gun.Def->Mesh, *Gun.Def->Mesh);
-		if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *Path))
+		if (UStaticMesh* M = Weapons::LoadMesh(Gun.Def->Mesh))
 		{
 			Mesh->SetStaticMesh(M);
 		}

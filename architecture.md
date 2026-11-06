@@ -254,6 +254,15 @@ columns), each snapped to the nearest free spot (`snap_spot`). `warzone.mood` dr
 post-process grading in `build_level.py`. The photo facades, ground and street layout are untouched, so the
 neighbourhood stays recognisable.
 
+`assets/models/quaternius_guns/` (second pack, CC0): `tools/import_gun_pack.py` unzips the Quaternius *Ultimate Gun Pack* and runs
+`tools/blender/export_guns.py` in Blender, which picks one pack model per roster mesh name (`gun_p9` … `gun_knife`), scales it
+to metres (the pack is ~6× life size), puts the barrel axis on the origin (+X forward, grip at x = 0), welds a pack silencer on the
+two suppressed guns, lifts the near-black pack colours and exports FBX. `pieces.json › materials` maps the FBX material names
+(Black, Metal, Wood, …) to the map's own `M_*` materials, which `build_level.py` applies per slot after the Interchange import
+(`apply_slot_materials`). At run time `Weapons::LoadMesh(Name)` looks for `/Game/Models/quaternius_guns/<Name>` first and falls
+back to the generated box mesh `/Game/Meshes/<Name>`; the first-person viewmodel, the third-person gun in the hands and the
+dropped-weapon pickups all go through it.
+
 ## Build / run
 
 See `README.md`. In short: `tools/ue/build_all.ps1` runs the Python pipeline, compiles the

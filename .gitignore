@@ -16,3 +16,4 @@ assets/models/*/_textures_src/
 assets/models/*/*.fbm/
 data/raw/mapillary_token.txt
 data/raw/mapillary/img/
+assets/models/*/_src/

@@ -378,6 +378,28 @@ def import_model(pack, key, fbx_file):
     return imported
 
 
+def apply_slot_materials(mesh, mapping):
+    """Swap the FBX's own materials for the map's M_* ones by slot name (pieces.json > materials)."""
+    if not mapping:
+        return
+    changed = 0
+    for i, sm in enumerate(mesh.get_editor_property("static_materials")):
+        names = [str(sm.get_editor_property(p)) for p in ("imported_material_slot_name", "material_slot_name")]
+        target = None
+        for n in names:
+            n = n.split(".")[0]
+            target = mapping.get(n) or mapping.get(n[2:] if n.startswith("M_") else n)
+            if target:
+                break
+        if target and target in materials:
+            mesh.set_material(i, materials[target])
+            changed += 1
+        elif target:
+            warn(f"slot material {target} not built")
+    if changed:
+        eal.save_loaded_asset(mesh)
+
+
 if os.path.isdir(MODELS_DIR):
     fbx_pipeline = None
     for pack in sorted(os.listdir(MODELS_DIR)):
@@ -385,7 +407,9 @@ if os.path.isdir(MODELS_DIR):
         if not os.path.isfile(pj):
             continue
         with open(pj, "r", encoding="utf-8") as f:
-            pieces = json.load(f)["pieces"]
+            pack_info = json.load(f)
+        pieces = pack_info["pieces"]
+        slot_materials = pack_info.get("materials", {})     # FBX material name -> map material (M_*)
         for key, info in pieces.items():
             try:
                 if fbx_pipeline is None:
@@ -393,6 +417,8 @@ if os.path.isdir(MODELS_DIR):
                 t0 = time.time()
                 was_new = stale(f"/Game/Models/{pack}/{key}", os.path.join(MODELS_DIR, pack, info["fbx"]))
                 models[f"{pack}/{key}"] = import_model(pack, key, os.path.join(MODELS_DIR, pack, info["fbx"]))
+                if was_new or FORCE_MATERIALS:
+                    apply_slot_materials(models[f"{pack}/{key}"], slot_materials)
                 if was_new:
                     log(f"model {pack}/{key} imported in {time.time() - t0:.0f}s")
             except Exception as e:

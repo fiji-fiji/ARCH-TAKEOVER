@@ -26,16 +26,7 @@
 
 namespace
 {
-	UStaticMesh* HeldMesh(const FString& Name)
-	{
-		static TMap<FString, UStaticMesh*> Cache;
-		if (UStaticMesh** Found = Cache.Find(Name)) return *Found;
-		const FString Path = FString::Printf(TEXT("/Game/Meshes/%s.%s"), *Name, *Name);
-		UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *Path);
-		if (M) M->AddToRoot();
-		Cache.Add(Name, M);
-		return M;
-	}
+	UStaticMesh* HeldMesh(const FString& Name) { return Weapons::LoadMesh(Name); }
 }
 
 AFPSCharacter::AFPSCharacter()
@@ -325,7 +316,7 @@ void AFPSCharacter::ApplyHeldVisuals()
 {
 	if (!GunMesh1P) return;
 	UStaticMesh* M = nullptr;
-	FVector Loc(38.f, 17.f, -24.f);
+	FVector Loc(26.f, 15.f, -14.f);   // grip at the bottom edge of a 90-degree view, receiver and sights in frame
 	FRotator Rot(0.f, -4.f, 0.f);
 	float Scale = 0.6f;
 	switch (Held)
@@ -336,8 +327,8 @@ void AFPSCharacter::ApplyHeldVisuals()
 		if (const FWeaponDef* D = HeldDef())
 		{
 			M = HeldMesh(D->Mesh);
-			if (D->bMelee) { Loc = FVector(30.f, 15.f, -22.f); Rot = FRotator(0.f, -10.f, 0.f); Scale = 0.7f; }
-			else if (D->Slot == EWeaponSlot::Side) { Loc = FVector(34.f, 15.f, -22.f); }
+			if (D->bMelee) { Loc = FVector(22.f, 12.f, -13.f); Rot = FRotator(0.f, -10.f, 0.f); Scale = 0.7f; }
+			else if (D->Slot == EWeaponSlot::Side) { Loc = FVector(24.f, 13.f, -13.f); }
 		}
 		break;
 	case EHeldSlot::Nade:
@@ -361,6 +352,16 @@ void AFPSCharacter::ApplyHeldVisuals()
 		GunMesh1P->SetRelativeScale3D(FVector(Scale));
 		GunMesh1P->SetVisibility(true);
 		GunBaseLoc = Loc; GunBaseRot = Rot; GunBaseScale = Scale;
+		if (GunMesh3P)
+		{
+			// everyone else sees the same item in the hands (a real mesh, not the placeholder cube)
+			GunMesh3P->SetStaticMesh(M);
+			GunMesh3P->EmptyOverrideMaterials();
+			GunMesh3P->SetRelativeLocation(FVector(30.f, 14.f, 36.f));
+			GunMesh3P->SetRelativeRotation(FRotator(0.f, -6.f, 0.f));
+			GunMesh3P->SetRelativeScale3D(FVector(Scale));
+			GunMesh3P->SetVisibility(true);
+		}
 		// the muzzle flash sits at the front of the held mesh
 		const FBoxSphereBounds B = M->GetBounds();
 		MuzzleFlash->SetRelativeLocation(Loc + Rot.RotateVector(FVector((B.Origin.X + B.BoxExtent.X) * Scale, 0.f, (B.Origin.Z + B.BoxExtent.Z * 0.2f) * Scale)));
@@ -368,6 +369,7 @@ void AFPSCharacter::ApplyHeldVisuals()
 	else
 	{
 		GunMesh1P->SetVisibility(false);
+		if (GunMesh3P) GunMesh3P->SetVisibility(false);
 	}
 }
 

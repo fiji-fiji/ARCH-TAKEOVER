@@ -701,6 +701,13 @@ void ABombGameMode::Tick(float DeltaSeconds)
 				PC->SetControlRotation(Rot);
 			}
 		}
+		FString Give;
+		if (!bAutoShotTaken && T >= AutoShotAt - 0.6f && FParse::Value(FCommandLine::Get(), TEXT("pbm_give="), Give, false))
+		{
+			// dev: -pbm_give=ar7,frag hands the human these items (free) just before the screenshot
+			TArray<FString> Keys; Give.ParseIntoArray(Keys, TEXT(","));
+			if (AFPSCharacter* H = HumanCharacter()) for (const FString& K : Keys) H->GiveWeapon(FName(*K));
+		}
 		if (!bAutoShotTaken && T >= AutoShotAt - 1.5f && FParse::Param(FCommandLine::Get(), TEXT("pbm_openshop")))
 		{
 			if (AFPSPlayerController* PC = Cast<AFPSPlayerController>(HumanController())) PC->OpenShop();

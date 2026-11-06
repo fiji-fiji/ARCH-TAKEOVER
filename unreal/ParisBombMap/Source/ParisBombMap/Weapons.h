@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+class UStaticMesh;
 
 /**
  * The weapon roster, the rules of which come 1:1 from FPS Reborn (js/weapons.js, grenades.js): slots, prices,
@@ -108,6 +109,8 @@ namespace Weapons
 	const TArray<FName>& NadeOrder();
 	int32 PriceOf(FName Key);
 	FString NameOf(FName Key);
+	/** Static mesh for a roster Mesh name: /Game/Models/quaternius_guns/<Name> if the gun pack was imported, else the generated /Game/Meshes/<Name>. Cached, rooted. */
+	UStaticMesh* LoadMesh(const FString& Name);
 
 	// movement (FPS Reborn PLAYER): m/s
 	constexpr float RunSpeed = 6.75f;

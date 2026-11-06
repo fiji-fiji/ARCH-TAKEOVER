@@ -1,4 +1,5 @@
 #include "Weapons.h"
+#include "Engine/StaticMesh.h"
 
 namespace
 {
@@ -298,6 +299,21 @@ namespace Weapons
 		if (const FGrenadeDef* G = FindGrenade(Key)) return G->Price;
 		if (const FArmorDef* A = FindArmor(Key)) return A->Price;
 		return 0;
+	}
+
+	UStaticMesh* LoadMesh(const FString& Name)
+	{
+		static TMap<FString, UStaticMesh*> Cache;
+		if (UStaticMesh** Found = Cache.Find(Name)) return *Found;
+		UStaticMesh* M = nullptr;
+		for (const TCHAR* Dir : { TEXT("/Game/Models/quaternius_guns"), TEXT("/Game/Meshes") })
+		{
+			M = LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("%s/%s.%s"), Dir, *Name, *Name));
+			if (M) break;
+		}
+		if (M) M->AddToRoot();
+		Cache.Add(Name, M);
+		return M;
 	}
 
 	FString NameOf(FName Key)

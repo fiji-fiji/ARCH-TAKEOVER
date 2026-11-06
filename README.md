@@ -109,6 +109,7 @@ next to you at round start; your bot teammates only take it 10 s after GO, if yo
 
 * Building footprints, streets, trees: © OpenStreetMap contributors (ODbL).
 * Building heights (BD TOPO) and the aerial orthophoto: IGN, Licence Ouverte / Etalab 2.0.
+* Gun and knife models: Quaternius, *Ultimate Gun Pack* (https://quaternius.com), CC0 1.0 — normalised by `tools/blender/export_guns.py` into `assets/models/quaternius_guns/`.
 * Street-level photos: City of Paris survey "Immergis pour la Ville de Paris" on Panoramax (Etalab 2.0) and
   Panoramax contributors (CC BY-SA 4.0); Mapillary contributors (CC BY-SA 4.0) — fetched with your own client
   token in `data/raw/mapillary_token.txt` (never committed).
