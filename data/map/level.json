@@ -7099,16 +7099,18 @@
     "M_Boot",
     "M_Gear",
     "M_Skin",
-    "M_GunBlack"
+    "M_GunBlack",
+    "M_Metal"
    ],
-   "tris": 316
+   "tris": 428
   },
   "rifle": {
    "file": "meshes/rifle.obj",
    "slots": [
-    "M_GunBlack"
+    "M_GunBlack",
+    "M_Metal"
    ],
-   "tris": 8
+   "tris": 120
   },
   "tree_a": {
    "file": "meshes/tree_a.obj",
@@ -7218,9 +7220,10 @@
    "file": "meshes/scaffold.obj",
    "slots": [
     "M_Metal",
-    "M_Wood"
+    "M_Wood",
+    "M_Tarp"
    ],
-   "tris": 144
+   "tris": 156
   },
   "dumpster": {
    "file": "meshes/dumpster.obj",
@@ -7247,7 +7250,7 @@
    "slots": [
     "M_BarrierGrey"
    ],
-   "tris": 32
+   "tris": 216
   },
   "container": {
    "file": "meshes/container.obj",

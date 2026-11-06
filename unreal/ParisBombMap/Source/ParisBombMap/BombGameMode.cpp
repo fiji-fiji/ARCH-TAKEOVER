@@ -410,6 +410,22 @@ void ABombGameMode::Tick(float DeltaSeconds)
 	if (AutoShotAt >= 0.f)
 	{
 		const float T = GetWorld()->GetTimeSeconds();
+		if (!bAutoShotTaken && T >= AutoShotAt - 0.5f && FParse::Param(FCommandLine::Get(), TEXT("pbm_lookmate")))
+		{
+			// dev: turn the human towards the nearest living teammate so the screenshot shows a soldier model
+			AFPSCharacter* H = HumanCharacter(); APlayerController* PC = HumanController();
+			if (H && PC)
+			{
+				AFPSCharacter* Best = nullptr; float BestD = 1e9f;
+				for (AFPSCharacter* C : Characters)
+				{
+					if (!C || C == H || C->bDead || C->GetTeam() != H->GetTeam()) continue;
+					const float D = FVector::Dist(C->GetActorLocation(), H->GetActorLocation());
+					if (D < BestD) { BestD = D; Best = C; }
+				}
+				if (Best) PC->SetControlRotation((Best->GetActorLocation() + FVector(0, 0, 20.f) - H->GetEyeLocation()).Rotation());
+			}
+		}
 		if (!bAutoShotTaken && T >= AutoShotAt)
 		{
 			bAutoShotTaken = true;

@@ -3,6 +3,7 @@
 param(
     [switch]$ForceReimport,
     [switch]$SkipNav,
+    [switch]$ForceMaterials,   # recreate every material (after a material-graph change in build_level.py)
     [string]$Engine = "D:\UE_5.8"
 )
 $ErrorActionPreference = "Stop"
@@ -13,6 +14,7 @@ $Editor = Join-Path $Engine "Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
 if (-not (Test-Path $Editor)) { throw "UnrealEditor-Cmd.exe not found at $Editor" }
 $env:PBM_FORCE_REIMPORT = if ($ForceReimport) { "1" } else { "0" }
 $env:PBM_SKIP_NAV = if ($SkipNav) { "1" } else { "0" }
+$env:PBM_FORCE_MATERIALS = if ($ForceMaterials) { "1" } else { "0" }
 $LogFile = Join-Path $Root "unreal\ParisBombMap\Saved\Logs\build_level.log"
 Write-Host "== Building level with $Editor"
 Write-Host "   log: $LogFile"

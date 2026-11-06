@@ -158,8 +158,8 @@ class MeshWriter:
                        [(p[0], p[1], z0), (q[0], q[1], z0), (q[0], q[1], z1), (p[0], p[1], z1)],
                        [(u0, (z0 - v0) / v_scale), (u1, (z0 - v0) / v_scale), (u1, (z1 - v0) / v_scale), (u0, (z1 - v0) / v_scale)])
 
-    def prism(self, ring, z0, z1, mat_side, mat_top, uv_side=1.0, uv_top=1.0, bottom=False, mat_bottom=None):
-        ring = clean_ring(ring)
+    def prism(self, ring, z0, z1, mat_side, mat_top, uv_side=1.0, uv_top=1.0, bottom=False, mat_bottom=None, eps=0.05):
+        ring = clean_ring(ring, eps)
         if len(ring) < 3:
             return
         u = 0.0
@@ -176,7 +176,7 @@ class MeshWriter:
         sx, sy, sz = size
         corners = [(-sx / 2, -sy / 2), (sx / 2, -sy / 2), (sx / 2, sy / 2), (-sx / 2, sy / 2)]
         ring = [(center[0] + rot2(c, yaw)[0], center[1] + rot2(c, yaw)[1]) for c in corners]
-        self.prism(ring, z0, z0 + sz, mat, mat_top or mat, uv, uv, bottom=True)
+        self.prism(ring, z0, z0 + sz, mat, mat_top or mat, uv, uv, bottom=True, eps=min(sx, sy) * 0.25)   # thin parts survive
 
     def cylinder(self, mat, center, r, z0, z1, segs=12, mat_top=None, uv=1.0):
         ring = [(center[0] + r * math.cos(2 * math.pi * k / segs), center[1] + r * math.sin(2 * math.pi * k / segs)) for k in range(segs)]

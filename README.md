@@ -46,10 +46,11 @@ Add `-FetchData` to re-download the OpenStreetMap data, the IGN buildings and th
 
 ## Play
 
-![in-game](data/screenshot_facades.png)
+![in-game](data/screenshot_ground.png)
 
 *Rue Saint-Martin from the defenders' spawn: every wall is the real facade, projected from the City of Paris
-street-photo survey (the earlier procedural look is kept in `data/screenshot_ingame.png`).*
+street-photo survey, and the ground is the IGN aerial orthophoto (`data/screenshot_soldier.png` shows a
+teammate; the earlier procedural look is kept in `data/screenshot_ingame.png`).*
 
 **Quickest:** double-click `Play.bat` at the root of the workspace. It launches the game directly
 (`UnrealEditor.exe … -game`, windowed 1920×1080, no editor UI). Options via PowerShell:

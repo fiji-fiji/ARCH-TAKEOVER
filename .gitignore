@@ -11,3 +11,4 @@ unreal/ParisBombMap/Content/
 __pycache__
 data/_debug/
 data/raw/panoramax/img/
+data/_*

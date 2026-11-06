@@ -164,13 +164,13 @@ def apply_ign_heights(buildings):
     return matched
 
 
-def clean_ring(pts):
-    """Drop duplicate points, force counter-clockwise order (outward normal of p->q is (dy, -dx))."""
+def clean_ring(pts, eps=0.05):
+    """Drop duplicate points (closer than eps), force counter-clockwise order (outward normal of p->q is (dy, -dx))."""
     out = []
     for p in pts:
-        if not out or math.hypot(p[0] - out[-1][0], p[1] - out[-1][1]) > 0.05:
+        if not out or math.hypot(p[0] - out[-1][0], p[1] - out[-1][1]) > eps:
             out.append(p)
-    if len(out) > 1 and math.hypot(out[0][0] - out[-1][0], out[0][1] - out[-1][1]) < 0.05:
+    if len(out) > 1 and math.hypot(out[0][0] - out[-1][0], out[0][1] - out[-1][1]) < eps:
         out.pop()
     if len(out) >= 3 and poly_area(out) < 0:
         out.reverse()

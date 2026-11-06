@@ -19,7 +19,7 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | D8 | Procedural textures (facade, shopfront, zinc, asphalt, road, pavement, grass, tarp) | ✅ done (8 PNGs) |
 | D9 | Real building heights from IGN BD TOPO (French open data)            | ✅ done (611 of 938 buildings matched) |
 | D10| Real facades: street-level photos (Panoramax, City of Paris campaign) projected onto every street-facing wall | ✅ verified in game (232 buildings / 726 walls, `data/screenshot_facades.png`) |
-| D11| Real ground: IGN aerial orthophoto (20 cm/px) on roads, pavements and the square, blended with asphalt detail | 🟡 in progress |
+| D11| Real ground: IGN aerial orthophoto on roads and pavements, blended with asphalt detail | ✅ verified in game (`data/screenshot_ground.png`: real markings, zebra crossings) |
 | L1 | Playable zone 345 m × 415 m — classic 5v5 proportions                | ✅ done (enlarged at user request) |
 | L2 | Spawns: attackers at Rue Réaumur / Arts-et-Métiers, defenders at the front door | ✅ done |
 | L3 | Bomb sites: A = Nazareth / Passage du Vertbois, B = Square Émile-Chautemps | ✅ done |
@@ -37,8 +37,9 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | U7 | Build wrappers (`build_project.ps1`, `build_level.ps1`, `build_all.ps1`) | ✅ done |
 | U8 | One-click game launcher (`Play.bat` → `tools/ue/play.ps1`, no editor UI) | ✅ verified (standalone run + screenshot) |
 | U9 | Renderer tuned for the GeForce GTX 1660 (no Lumen → no CPU distance-field builds, shadow maps, SSR, TAA) | ✅ verified (launch 25 min → 90 s after a reimport) |
-| U10| Soldier + rifle models (generated low-poly meshes replacing the cylinder / sphere / cube stand-ins; 1P rifle with sights) | 🟡 in progress |
-| U11| Sound: synthesised rifle, reload, footsteps, hit, plant / defuse beeps, bomb timer, explosion, round jingles | 🟡 in progress |
+| U10| Soldier + rifle models (generated low-poly meshes replacing the cylinder / sphere / cube stand-ins; 1P rifle with sights) | ✅ verified in game (`data/screenshot_soldier.png`) |
+| U11| Sound: synthesised rifle, reload, footsteps, hit, plant / defuse beeps, bomb timer, explosion, round jingles | ✅ built — 18 WAVs imported, no missing-sound warnings in a run; to hear in a playtest |
+| U12| No depth of field (FPS readability), dev switch `-pbm_lookmate` aims the auto-screenshot at a teammate | ✅ done |
 | —  | Online play (replication)                                            | ❌ out of scope for now |
 
 ---
@@ -140,7 +141,7 @@ shows the projection on the frames (`data/_debug/`); in game, the boulangerie an
 **Calibration notes:** campaign pitch +3.3° (the horizon sits below the frame centre), lens height 2.4 m;
 contributors' panoramas are excluded (not levelled: they tilted the upper floors in the first test).
 
-## D11. Real ground from the IGN orthophoto — 🟡 in progress
+## D11. Real ground from the IGN orthophoto — ✅
 **What:** the ground (asphalt slab, road strips, sidewalk rings, the square) is textured with the IGN
 high-resolution aerial orthophoto (open licence, ~20 cm/px): real road markings, zebra crossings, bus lanes,
 the square's paths. Because 20 cm/px is blurry at eye level, the material multiplies it with the tiling
@@ -150,6 +151,9 @@ asphalt detail texture. Trees' canopies and parked cars are baked in from above 
 sidewalk polygons world-projected UVs into it (material `M_Ground`); `build_level.py` builds `M_Ground`
 as ortho × detail.
 **Test:** `data/preview_ortho.jpg`; in game the zebra crossing at Réaumur and the bus lane markings are real.
+**Notes:** the stitched sheet (525 × 595 m at 8 px/m) is resampled to 4096 × 4096 so Unreal builds mipmaps for
+it (a non-power-of-two texture had no mips and shimmered at grazing angles); the blend is ortho × (0.7 + 0.6 ×
+detail), a straight ×2 multiply looked blotchy. Verified on `data/screenshot_ground.png`.
 
 ## L1. Playable zone — ✅
 **What:** 345 m × 415 m (x ∈ [−195, 150], y ∈ [−320, 95] around home), the proportions of a classic 5v5 bomb map,
@@ -291,7 +295,7 @@ Four commented lines in the ini switch Lumen back on for a stronger card.
 
 ---
 
-## U10. Soldier + rifle models — 🟡 in progress
+## U10. Soldier + rifle models — ✅
 **What:** replaces the engine-primitive stand-ins with generated low-poly models: a soldier (helmet, head,
 vest over a team-coloured uniform, arms holding the rifle, legs; crouch handled by the capsule as before)
 seen by the others, and a rifle (receiver, barrel, magazine, stock, sights, grip) in first and third person.
@@ -300,8 +304,12 @@ seen by the others, and a rifle (receiver, barrel, magazine, stock, sights, grip
 `AFPSCharacter` loads `/Game/Meshes/soldier` and `/Game/Meshes/rifle` and falls back to the primitives if
 they are missing.
 **Test:** screenshot of a bot; the 1P rifle sits bottom-right with the sights under the crosshair.
+**Verified:** `data/screenshot_soldier.png` (a blue defender bot during warm-up, via `play.ps1 -AutoShot 3 -LookMate`)
+and `data/screenshot_ground.png` (the 1P rifle). Gotcha: the ring cleaner dropped every box thinner than 5 cm
+(barrel, grip, sights), so `MeshWriter.box` now passes `eps = min(side) / 4`; the 1P rifle sits at (38, 17, −24) cm,
+scale 0.6, yaw −4° (the first placement was too close to the lens).
 
-## U11. Sound — 🟡 in progress
+## U11. Sound — ✅ built
 **What:** synthesised WAVs (numpy): rifle shot, dry fire, reload, footsteps, hit marker, headshot, death,
 plant / defuse ticks, bomb beeps accelerating to the blast, explosion, round start / win / lose, match end.
 **How:** `tools/make_sounds.py` → `assets/sounds/*.wav`; `build_level.py` imports them to `/Game/Sounds`;
@@ -322,7 +330,9 @@ silent rather than fatal.
 
 ## Known limitations
 
-- Characters and the rifle are engine primitives (cylinder / sphere / cube), not real models.
+- Characters and the rifle are generated low-poly box models with no animation (they glide; crouch squashes them).
 - Bullet tracers are debug lines (invisible in Shipping builds).
-- No sound, no multiplayer replication (single machine only).
+- Sounds are synthesised (no recorded samples); no multiplayer replication (single machine only).
+- Photo facades bake in parked cars, pedestrians and the survey-day lighting; the orthophoto ground bakes in
+  cars and tree canopies; untextured walls (courtyards, backs) keep the procedural facade.
 - Callout text is mirrored when seen from behind.

@@ -15,6 +15,7 @@ import traceback
 
 import unreal
 
+FORCE_MATERIALS = os.environ.get("PBM_FORCE_MATERIALS", "0") == "1"
 FORCE_REIMPORT = os.environ.get("PBM_FORCE_REIMPORT", "0") == "1"
 SKIP_NAV = os.environ.get("PBM_SKIP_NAV", "0") == "1"
 
@@ -115,7 +116,7 @@ materials = {}
 
 def make_material(name, spec):
     path = f"{MAT_PKG}/{name}"
-    if eal.does_asset_exist(path) and not FORCE_REIMPORT:
+    if eal.does_asset_exist(path) and not FORCE_REIMPORT and not FORCE_MATERIALS:
         return unreal.load_asset(path)
     if eal.does_asset_exist(path):
         eal.delete_asset(path)
@@ -132,10 +133,15 @@ def make_material(name, spec):
             td = mel.create_material_expression(mat, unreal.MaterialExpressionTextureSample, -700, 300)
             td.set_editor_property("texture", textures[spec["detail"]])
             mel.connect_material_expressions(tc, "", td, "UVs")
+            # grain = 0.7 + 0.6 * detail  (mean ~1: the photo keeps its brightness, the detail only modulates it)
             k2 = mel.create_material_expression(mat, unreal.MaterialExpressionConstant, -700, 500)
-            k2.set_editor_property("r", 2.0)
-            m1 = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -500, 350)
-            mel.connect_material_expressions(td, "RGB", m1, "A"); mel.connect_material_expressions(k2, "", m1, "B")
+            k2.set_editor_property("r", 0.6)
+            k3 = mel.create_material_expression(mat, unreal.MaterialExpressionConstant, -700, 600)
+            k3.set_editor_property("r", 0.7)
+            m0 = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -550, 350)
+            mel.connect_material_expressions(td, "RGB", m0, "A"); mel.connect_material_expressions(k2, "", m0, "B")
+            m1 = mel.create_material_expression(mat, unreal.MaterialExpressionAdd, -450, 350)
+            mel.connect_material_expressions(m0, "", m1, "A"); mel.connect_material_expressions(k3, "", m1, "B")
             m2 = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -200, 100)
             mel.connect_material_expressions(ts, "RGB", m2, "A"); mel.connect_material_expressions(m1, "", m2, "B")
             mel.connect_material_property(m2, "", unreal.MaterialProperty.MP_BASE_COLOR)

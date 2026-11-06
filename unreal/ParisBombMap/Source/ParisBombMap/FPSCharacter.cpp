@@ -84,8 +84,9 @@ AFPSCharacter::AFPSCharacter()
 	if (Rifle.Succeeded())
 	{
 		GunMesh1P->SetStaticMesh(Rifle.Object);
-		GunMesh1P->SetRelativeLocation(FVector(22.f, 13.f, -19.f));     // grip bottom-right, sights just under the crosshair
-		GunMesh1P->SetRelativeScale3D(FVector(0.85f));
+		GunMesh1P->SetRelativeLocation(FVector(38.f, 17.f, -24.f));     // grip bottom-right, sights just under the crosshair
+		GunMesh1P->SetRelativeRotation(FRotator(0.f, -4.f, 0.f));
+		GunMesh1P->SetRelativeScale3D(FVector(0.6f));
 	}
 	else
 	{

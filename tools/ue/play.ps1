@@ -5,6 +5,8 @@ param(
     [int]$Width = 1920,
     [int]$Height = 1080,
     [int]$AutoShot = 0,            # dev: take a screenshot after N seconds and quit
+    [switch]$LookMate,             # dev: aim the screenshot at the nearest teammate
+    [string[]]$Extra = @(),        # any other engine switches
     [string]$Engine = "D:\UE_5.8"
 )
 $ErrorActionPreference = "Stop"
@@ -21,6 +23,8 @@ if (-not (Test-Path (Join-Path $Root "unreal\ParisBombMap\Content\Maps\L_SaintMa
 $Args = @("`"$Project`"", "-game", "-log", "-ResX=$Width", "-ResY=$Height")
 if ($Fullscreen) { $Args += "-fullscreen" } else { $Args += "-windowed" }
 if ($AutoShot -gt 0) { $Args += "-pbm_autoshot=$AutoShot" }
+if ($LookMate) { $Args += "-pbm_lookmate" }
+$Args += $Extra
 Write-Host "== Launching game: $Editor $Args"
 $p = Start-Process -FilePath $Editor -ArgumentList $Args -PassThru -Wait
 Write-Host "== Game exit code: $($p.ExitCode)"

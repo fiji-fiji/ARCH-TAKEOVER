@@ -57,8 +57,9 @@ for j in range(ny):
         with Image.open(io.BytesIO(data)) as tile:
             sheet.paste(tile.convert("RGB"), (px0, py0))
         print(f"  tile {i},{j} ok")
+sheet = sheet.resize((4096, 4096), Image.LANCZOS)        # power of two: Unreal builds mipmaps + compresses it
 sheet.save(OUT / "ground.jpg", quality=90)
-(OUT / "ground.json").write_text(json.dumps({"bbox": [BX0, BY0, BX1, BY1], "ppm": args.ppm, "w": W, "h": H,
+(OUT / "ground.json").write_text(json.dumps({"bbox": [BX0, BY0, BX1, BY1], "ppm": args.ppm, "w": 4096, "h": 4096,
                                              "source": "IGN HR.ORTHOIMAGERY.ORTHOPHOTOS (Licence Ouverte)"}), encoding="utf-8")
 sheet.resize((W // 4, H // 4)).save(ROOT / "data" / "preview_ortho.jpg", quality=80)
 print("wrote", OUT / "ground.jpg", "and data/preview_ortho.jpg")
