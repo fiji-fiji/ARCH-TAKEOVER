@@ -594,6 +594,7 @@ void ABombGameMode::OnCharacterDied(AFPSCharacter* Victim, AController* Killer)
 	const FString VictimName = Victim->GetPlayerState() ? Victim->GetPlayerState()->GetPlayerName() : TEXT("?");
 	const FString Weapon = Victim->LastHitWeapon.IsEmpty() ? TEXT("") : FString::Printf(TEXT(" [%s]"), *Victim->LastHitWeapon);
 	S->AddFeed(FString::Printf(TEXT("%s%s%s  >  %s"), *KillerName, *Weapon, Victim->bLastHitHeadshot ? TEXT(" (HS)") : TEXT(""), *VictimName), TeamColor(Victim->GetTeam()));
+	UE_LOG(LogParisBomb, Log, TEXT("Kill: %s%s%s > %s"), *KillerName, *Weapon, Victim->bLastHitHeadshot ? TEXT(" (HS)") : TEXT(""), *VictimName);
 
 	if (Victim->bHasBomb)
 	{
@@ -763,6 +764,7 @@ void ABombGameMode::Tick(float DeltaSeconds)
 						if (C && !C->bDead && FVector::Dist(C->GetActorLocation(), Bomb->GetActorLocation()) < BlastRadius)
 						{
 							C->LastHitWeapon = TEXT("the bomb");
+							C->bLastHitHeadshot = false;
 							C->Die(nullptr, Bomb);
 						}
 					}

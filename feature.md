@@ -243,6 +243,12 @@ cube rifle in first person.
 **How:** `Source/ParisBombMap/FPSCharacter.*`, `FPSPlayerController.*`.
 **Test:** verified in a standalone `-game` run (auto-screenshot at 40 s): HUD, movement, rifle. Human feel still to
 playtest.
+**Fix 2026-11-06 (user report "can't kill enemies, no damage"):** the character capsule used the engine's `Pawn`
+collision profile, which *ignores* the Visibility channel, so every hitscan / melee / grenade line trace passed straight
+through the bodies and nobody had ever taken bullet damage. The capsule now blocks Visibility
+(`SetCollisionResponseToChannel(ECC_Visibility, ECR_Block)` in the constructor). Verified in a 140 s run log: "Kill:
+Karim [P9] > Ines", "Lucas [MP-11] (HS) > Theo", then four attackers killed by their own bomb blast. Kills are now
+logged (`LogParisBomb: Kill: …`).
 
 ## U3. Bomb-defusal game mode — ✅ (plant / defuse not yet seen in a run)
 **What:** `ABombGameMode` + `ABombGameState`: 5 v 5, 4 s warm-up → 8 s freeze → 2:30 live; a random attacker
@@ -452,7 +458,7 @@ shows the B site ruin, `-pbm_teleport=-18300,26200,180,-54,2` the Sébastopol ch
 | `build_level.py` | ✅ 669 meshes imported (16 min first run, cached after), level assembled in 4 s, nav mesh 4 096 tiles in 14 min, `L_SaintMartin.umap` 4.2 MB |
 | Standalone `-game` run with `-pbm_autoshot=40` | ✅ Warmup → Freeze → Live, 5 v 5 alive, bots navigate to the sites / up the lanes, screenshot `unreal/ParisBombMap/Saved/Screenshots/WindowsEditor/autoshot.png` (copied to `data/screenshot_ingame.png`) |
 | `build_facades.py` (3 shards) + `build_map.py` + level rebuild with the atlases | ✅ 232 buildings textured in 15 min; 264 materials, 669 meshes re-imported in 15 min, level assembled, no warnings; in-game screenshot shows the real shops along Rue Saint-Martin |
-| Plant / defuse / explosion | 🟡 implemented, not yet observed in a run |
+| Plant / defuse / explosion | ✅ explosion observed (140 s run: 4 blast kills); defuse not yet seen |
 | Human playtest (gun feel, movement) | 🟡 pending |
 
 ## Known limitations

@@ -44,6 +44,8 @@ AFPSCharacter::AFPSCharacter()
 	Rng.Initialize(FMath::Rand());
 
 	GetCapsuleComponent()->InitCapsuleSize(34.f, 88.f);
+	// the engine's Pawn profile ignores Visibility traces: bullets, melee and grenade line-of-sight would pass through
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	BaseEyeHeight = 70.f;
 	bUseControllerRotationYaw = true;
 
