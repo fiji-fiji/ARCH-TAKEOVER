@@ -354,6 +354,7 @@ void AFPSCharacter::ApplyHeldVisuals()
 	}
 	if (M)
 	{
+		if (GunMesh1P->GetStaticMesh() != M) SwapT = 0.3f;        // FPS Reborn: the new weapon rises from below
 		GunMesh1P->SetStaticMesh(M);
 		GunMesh1P->SetRelativeLocation(Loc);
 		GunMesh1P->SetRelativeRotation(Rot);
@@ -530,6 +531,15 @@ float AFPSCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	Armor -= FMath::RoundToInt(Soak);
 	Health -= DamageAmount - Soak;
 	LastDamageTime = GetWorld()->GetTimeSeconds();
+	bLastDamageHasFrom = false;
+	if (const APawn* Attacker = EventInstigator ? EventInstigator->GetPawn() : nullptr)
+	{
+		LastDamageFrom = Attacker->GetActorLocation(); bLastDamageHasFrom = true;
+	}
+	else if (DamageCauser)
+	{
+		LastDamageFrom = DamageCauser->GetActorLocation(); bLastDamageHasFrom = true;
+	}
 	if (Health <= 0.f)
 	{
 		Health = 0.f;
@@ -777,7 +787,16 @@ void AFPSCharacter::FireOnce(float ExtraSpreadDeg)
 			FlashOffTime = Now + 0.045f;
 		}
 	}
-	if (!bIsBot) KickBack = FMath::Min(KickBack + (D.bMelee ? 4.f : 1.5f + D.Sustained * 120.f), 7.f);
+	if (!D.bMelee && !D.bSilenced) SpottedUntil = FMath::Max(SpottedUntil, Now + 1.5f);   // enemies hear where you shot from
+	if (!bIsBot)
+	{
+		if (D.bMelee) SwingT = 0.32f;
+		else
+		{
+			Kick = D.Pellets > 1 ? 2.f : 1.f;
+			if (D.Key == TEXT("r44")) Flip = 1.f;                 // the revolver bucks up, cowboy style
+		}
+	}
 }
 
 void AFPSCharacter::FireHitscan(const FWeaponDef& D, float SpreadRad, const FVector& Start, const FRotator& Aim)
@@ -818,8 +837,12 @@ void AFPSCharacter::FireHitscan(const FWeaponDef& D, float SpreadRad, const FVec
 			Victim->bLastHitHeadshot = bHeadshot;
 			UGameplayStatics::ApplyPointDamage(Victim, Dmg, Dir, Hit, GetController(), this, UDamageType::StaticClass());
 			bAnyHit = true;
-			if (!bIsBot && !Victim->bDead) {}
-			if (!bIsBot) { LastHitMarkerTime = Now; GameSounds::UI(this, bHeadshot ? TEXT("S_Headshot") : TEXT("S_Hit"), 0.7f); }
+			if (!bIsBot)
+			{
+				LastHitMarkerTime = Now; LastDmgTextTime = Now;
+				LastHitPart = Victim->bDead ? 2 : (bHeadshot ? 1 : 0); LastHitDamage = Dmg;
+				GameSounds::UI(this, bHeadshot ? TEXT("S_Headshot") : TEXT("S_Hit"), 0.7f);
+			}
 		}
 	}
 }
@@ -837,7 +860,12 @@ void AFPSCharacter::FireMelee(const FWeaponDef& D, const FVector& Start, const F
 			Victim->LastHitWeapon = D.Name;
 			Victim->bLastHitHeadshot = false;
 			UGameplayStatics::ApplyPointDamage(Victim, D.DmgBody, Aim.Vector(), Hit, GetController(), this, UDamageType::StaticClass());
-			if (!bIsBot) { LastHitMarkerTime = World->GetTimeSeconds(); GameSounds::UI(this, TEXT("S_Hit"), 0.7f); }
+			if (!bIsBot)
+			{
+				LastHitMarkerTime = LastDmgTextTime = World->GetTimeSeconds();
+				LastHitPart = Victim->bDead ? 2 : 0; LastHitDamage = D.DmgBody;
+				GameSounds::UI(this, TEXT("S_Hit"), 0.7f);
+			}
 		}
 	}
 }
@@ -942,29 +970,50 @@ void AFPSCharacter::Tick(float DeltaSeconds)
 		if (GunMesh1P) GunMesh1P->SetVisibility(ScopeBlend < 0.5f && Held != EHeldSlot::Bomb ? true : (Held == EHeldSlot::Bomb));
 		if (Now >= FlashOffTime) MuzzleFlash->SetVisibility(false);
 
-		// ---- first-person feel: bob with the steps, sway against the turn, kick on fire
-		const float Speed = GetVelocity().Size2D();
+		// ---- first-person viewmodel, as FPS Reborn's Viewmodel.update (their metres / radians -> cm / degrees)
+		Kick = FMath::Max(0.f, Kick - DeltaSeconds * 12.f);
+		SwapT = FMath::Max(0.f, SwapT - DeltaSeconds);
+		Flip = FMath::Max(0.f, Flip - DeltaSeconds / 0.4f);
+		SwingT = FMath::Max(0.f, SwingT - DeltaSeconds);
 		const bool bOnGround = GetCharacterMovement()->IsMovingOnGround();
-		const float AmpTarget = bOnGround ? FMath::Clamp(Speed / RunSpeed, 0.f, 1.f) * (bIsCrouched ? 0.5f : 1.f) * (bWalking ? 0.6f : 1.f) : 0.f;
-		BobAmp = FMath::FInterpTo(BobAmp, AmpTarget, DeltaSeconds, 8.f);
-		BobTime += DeltaSeconds * (6.0f + 7.0f * FMath::Clamp(Speed / RunSpeed, 0.f, 1.f));
-		const float Breath = FMath::Sin(Now * 1.6f) * 0.12f;
-		FVector Bob(0.f, FMath::Sin(BobTime) * 1.1f * BobAmp, (FMath::Sin(BobTime * 2.f) * 0.55f - 0.35f) * BobAmp + Breath);
-		if (bScoped) Bob *= 0.15f;
-		FRotator Ctrl = GetControlRotation();
-		const float DYaw = FRotator::NormalizeAxis(Ctrl.Yaw - LastCtrlYaw), DPitch = FRotator::NormalizeAxis(Ctrl.Pitch - LastCtrlPitch);
-		LastCtrlYaw = Ctrl.Yaw; LastCtrlPitch = Ctrl.Pitch;
-		const float Dt = FMath::Max(DeltaSeconds, 1e-3f);
-		SwayYaw = FMath::FInterpTo(SwayYaw, FMath::Clamp(-DYaw / Dt * 0.012f, -4.f, 4.f), DeltaSeconds, 10.f);
-		SwayPitch = FMath::FInterpTo(SwayPitch, FMath::Clamp(DPitch / Dt * 0.010f, -3.f, 3.f), DeltaSeconds, 10.f);
-		KickBack = FMath::FInterpTo(KickBack, 0.f, DeltaSeconds, 16.f);
+		const float SpeedMps = bOnGround ? GetVelocity().Size2D() / 100.f : 0.f;
+		BobTime += DeltaSeconds * SpeedMps * 1.6f;
+		const float BobAmt = FMath::Min(1.f, SpeedMps / Weapons::RunSpeed);
+		const float Bx = FMath::Sin(BobTime) * 1.2f * BobAmt;                               // lateral, cm
+		const float By = -FMath::Abs(FMath::Cos(BobTime)) * 1.2f * BobAmt - SwapT * 50.f;   // vertical: the swap rises from below
+		auto Ease01 = [](float t) { t = FMath::Clamp(t, 0.f, 1.f); return t * t * (3.f - 2.f * t); };
+		auto Span = [](float p, float a, float b) { return (p - a) / (b - a); };
+		FVector Loc = GunBaseLoc + FVector(0.f, Bx, By);
+		FRotator Rot = GunBaseRot;
+		if (Def && Def->bMelee)
+		{
+			// knife: swipe from right to left
+			const float Sw = SwingT > 0.f ? FMath::Sin((1.f - SwingT / 0.32f) * PI) : 0.f;
+			Loc += FVector(8.f * Sw, -18.f * Sw, 5.f * Sw);
+			Rot += FRotator(-10.f * Sw, -45.f * Sw, -40.f * Sw);
+		}
+		else if (Gun && Def)
+		{
+			// refilling: the gun dips and tilts a little towards the hand
+			const float T = Gun->Busy() ? 1.f - Gun->Reloading / FMath::Max(0.01f, Def->ReloadTime) : 0.f;
+			const float Lean = Gun->Busy() ? Ease01(Span(T, 0.f, 0.1f)) - Ease01(Span(T, 0.9f, 1.f)) : 0.f;
+			Loc += FVector(-Kick * 5.f, -Lean * 2.f, -Lean * 4.f);
+			Rot += FRotator(Kick * 3.4f + Lean * 7.f, 0.f, -Lean * 13.f);
+			// R-44: snaps up hard in a blink, then settles back slowly before the next shot
+			if (Flip > 0.f)
+			{
+				const float U = 1.f - Flip;
+				const float A = U < 0.12f ? U / 0.12f : 1.f - Ease01((U - 0.12f) / 0.88f);
+				Rot += FRotator(A * 31.f, 0.f, -A * 7.f);
+				Loc += FVector(-A * 5.f, 0.f, A * 3.5f);
+			}
+		}
 		if (GunMesh1P && GunMesh1P->IsVisible())
 		{
-			const FVector Loc = GunBaseLoc + Bob + FVector(-KickBack, SwayYaw * 0.25f, -FMath::Abs(SwayPitch) * 0.1f);
-			const FRotator Rot = GunBaseRot + FRotator(KickBack * 1.6f + SwayPitch * 0.6f, SwayYaw * 0.9f, SwayYaw * 0.5f);
 			GunMesh1P->SetRelativeLocation(Loc);
 			GunMesh1P->SetRelativeRotation(Rot);
 		}
+		const FVector Bob(0.f, Bx, By);
 		// smooth crouch camera: the capsule jump is absorbed, the eye settles lower
 		CrouchCamOffset = FMath::FInterpTo(CrouchCamOffset, 0.f, DeltaSeconds, 10.f);
 		CamZ = FMath::FInterpTo(CamZ, bIsCrouched ? 46.f : 70.f, DeltaSeconds, 10.f);

@@ -21,6 +21,7 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | D10| Real facades: street-level photos (Panoramax, City of Paris campaign) projected onto every street-facing wall | ✅ verified in game (232 buildings / 726 walls, `data/screenshot_facades.png`) |
 | D11| Real ground: IGN aerial orthophoto on roads and pavements, blended with asphalt detail | ✅ verified in game (`data/screenshot_ground.png`: real markings, zebra crossings) |
 | D12| Facade quality pass: 90 px/m (was 40), 8k panoramas (was 6k), exposure matching between the photos of a wall, feathered seams (0.35 m) | ✅ verified: 232 buildings / 726 walls at 89 px/m avg, 147 MB, `data/screenshot_facades_hd.png`, 110 FPS unchanged |
+| D13| Second photo source: Mapillary (volunteer phone / dashcam / 360 photos, CC BY-SA 4.0) fills the streets and upper floors the city survey misses | 🟡 index + download done, facades regenerating |
 | L1 | Playable zone 345 m × 415 m — classic 5v5 proportions                | ✅ done (enlarged at user request) |
 | L2 | Spawns: attackers at Rue Réaumur / Arts-et-Métiers, defenders at the front door | ✅ done |
 | L3 | Bomb sites: A = Nazareth / Passage du Vertbois, B = Square Émile-Chautemps | ✅ done |
@@ -56,6 +57,9 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | A1 | Parisian building Blender asset (user-supplied 3-piece Haussmann block) split by Blender into 8 textured pieces (3 intact blocks, 3 shelled ruins, 2 facade slabs) and imported as FBX | ✅ built — pieces previewed in Blender, imported with textures (`/Game/Models/parisian_block`) |
 | A2 | War-zone dressing: 7 A1 pieces placed (B site ruin, Sébastopol chokepoint, facade slabs), 53 props (rubble, sandbags, hedgehogs, jersey barriers, burnt cars, craters, smoke columns), overcast dusty mood — photo facades untouched | ✅ built — see `data/screenshot_warzone_*.png` |
 | U14| Performance + feel pass: TSR upscaling, no VSync / frame smoothing / mouse smoothing, texture pool for the facade atlases, instanced trees / barriers / props, cull distances, crisper shadows, SSAO, grading; weapon bob / sway / kick, muzzle flash, smooth crouch camera | ✅ verified: 110 FPS (was 148 flat-looking / 77 at max settings), `data/screenshot_quality.png` |
+| U15| Viewmodel animations as in FPS Reborn: kick per shot (×2 shotguns), reload lean (dip + roll, eased in/out), weapon-swap rise, knife swipe, revolver buck | ✅ built (needs a hand playtest to feel) |
+| U16| Real gun models: Quaternius Ultimate Guns Pack (CC0, 40 FBX) replacing the box guns | 🟡 blocked: Google Drive download quota exceeded for every file (retry later or download by hand) |
+| U17| HUD as in FPS Reborn: single-dot crosshair, 4-line hit marker (gold head / pink kill), damage text, head star, hurt flash + direction arrow, north-up minimap (teammates, spotted enemies, bomb, sites, view cone + arrow) | ✅ verified (`data/screenshot_minimap.png`) |
 | —  | Online play (replication)                                            | ❌ out of scope for now |
 
 ---
@@ -189,6 +193,23 @@ and an in-game screenshot.
 **Verified 2026-11-06:** 3 shards × 21–26 min (76 / 75 / 81 buildings, 3 086 photo uses); atlases now mostly 2048² and
 4096×2048 (99 + 59), 30 at 4096²; mean coverage 0.905 (unchanged); level re-import 80 s; `data/screenshot_facades_hd.png`
 shows legible shop signs down Rue Saint-Martin at 109.5 FPS (same as before the pass).
+
+## D13. Second photo source: Mapillary — 🟡
+**What:** `tools/fetch_mapillary.py` queries the Mapillary Graph API (free client token in
+`data/raw/mapillary_token.txt`, not committed) for every image in the map box + 60 m (2 × 2 tiles under the 2 000-item
+cap): 2 011 usable pictures (1 796 frames, 215 panoramas; phones, GoPros, dashcams, 2017–2025). Each record is
+converted to the Panoramax schema: SfM-corrected position (`computed_geometry`), heading **and pitch** from the
+`computed_rotation` axis-angle (checked: the derived heading matches Mapillary's compass to 0.0° median), horizontal
+FOV from the normalised focal (`camera_parameters[0]`), camera height from `computed_altitude` (clamped 0.8–3.5 m,
+else 1.6), frames pulled at 2 048 px, panoramas at full size (the signed URLs expire, so the download happens in the
+fetch step; fisheye cameras and frames pitched > 35° are dropped). Index: `data/raw/mapillary/index.json`; photos in
+`data/raw/mapillary/img/` (Dropbox-ignored, ≈ 0.9 GB).
+**How:** `build_facades.py` merges the index (`--no-mapillary` to skip) with weight 0.45 — between the survey (1.0)
+and anonymous contributor frames (0.2) — so the survey still wins where it exists and Mapillary fills holes, the
+upper floors and the 5 buildings that had no usable photo; per-picture `cam_h` and `pitch` are honoured in the
+projection. Licence: CC BY-SA 4.0, credited in the README.
+**Test:** rebuild a low-coverage building with `--only … --force` and compare the coverage in its sidecar; then the
+full 3-shard run.
 
 ## L1. Playable zone — ✅
 **What:** 345 m × 415 m (x ∈ [−195, 150], y ∈ [−320, 95] around home), the proportions of a classic 5v5 bomb map,
@@ -495,6 +516,29 @@ less milky fog and a stronger sun in `layout.json › warzone.mood`.
 Weapon bob / sway / kick, the muzzle flash and the smooth crouch camera need a hand playtest (not visible in a still).
 The instanced-mesh merge was skipped: at 148 FPS draw calls were not the bottleneck; cull distances and shadow flags
 on small props went in instead.
+
+## U15 / U17. FPS Reborn presentation port — ✅
+**Why:** the user pointed out the specifics are all in FPS Reborn (`js/hud.js`, `style.css`, `js/weapons.js`
+Viewmodel). Ported 1:1 where the engines allow:
+* **Crosshair**: a single 4 px dot, `#5dffc0`, with a 1 px dark ring; hidden while scoped.
+* **Hit marker**: four 3 × 11 px diagonal lines 13 px out, white; gold (`#ffd23f`) on a head hit; pink (`#ff8fb1`) on a
+  kill; 0.15 s. **Damage text** under the crosshair ("POP!" pink / "BULLSEYE 104" gold / "26" white) fading over 0.6 s.
+  **Head star**: a big gold star pops round the crosshair (0.3 → 1.5 scale, 0.5 s).
+* **Hurt**: soft pink flash (0.35 s) plus an arrow 112 px from the centre pointing where the damage came from
+  (`AFPSCharacter::LastDamageFrom`).
+* **Minimap**: the whole map north-up, top-left, 320 px, white 40 % border; FPS Reborn colours (buildings
+  `#5d4e3c`, street `#e0cfa2`, site floor `#f6e7c2`, parks like crates `#b08f5e`), the zone outlined. Teammates always
+  (team colour), enemies only while *spotted*: 1.5 s after an unsilenced shot, 1.2 s while a teammate bot sees them
+  (`SpottedUntil`); the bomb: carrier badge / green diamond when dropped / pulsing cyan diamond when planted; site
+  letters A pink, B cyan; you: a 22 % white view cone (±0.6 rad) and a white arrow with a dark outline.
+  The texture is rendered by `build_map.py` (`assets/textures/minimap.png`, 1024², a square of zone + 24 m) and its
+  map-metre bounds are written to `Config/DefaultGame.ini [ParisMap]` for the HUD (`GConfig`).
+* **Viewmodel** (`AFPSCharacter::Tick`, their metres / radians → cm / degrees): bob phase += dt × speed × 1.6, lateral
+  sin × 1.2 cm, vertical −|cos| × 1.2 cm; kick 1 (2 for shotguns) decaying 12 / s → 5 cm back, 3.4° up; reload lean =
+  ease-in 0–10 % / ease-out 90–100 % of the reload → dips 4 cm, rolls 13°; swap rise: the new weapon starts 15 cm low
+  and rises over 0.3 s; knife swipe 0.32 s right-to-left; the R-44 bucks 31° in 0.05 s and settles over 0.35 s.
+**Test:** `data/screenshot_minimap.png` (minimap, dot crosshair); the hit marker / star / hurt arrow and the
+viewmodel moves need a hand playtest.
 
 ## Verification log
 

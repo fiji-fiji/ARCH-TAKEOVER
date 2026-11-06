@@ -8,7 +8,7 @@ Outputs (all under data/map/):
 
 Usage: python -I tools/build_map.py
 """
-import sys, json, math, pathlib, random
+import sys, json, math, pathlib, random, re
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import osm_lib
 from osm_lib import point_in_poly, poly_area, centroid, bbox_of, dist_point_seg
@@ -1265,6 +1265,37 @@ callouts = [{"text": c["name"], "loc": ue_loc((c["at"][0], c["at"][1], 3.2))} fo
 home = layout["home"]
 nav_bounds = {"loc": ue_loc(((ZX0 + ZX1) / 2, (ZY0 + ZY1) / 2, 5.0)), "extent": [(ZX1 - ZX0) * 50 + 500, (ZY1 - ZY0) * 50 + 500, 1500]}
 
+# ======================================================================= minimap texture (U17, FPS Reborn colours, north up)
+MM = 1024
+mm_side = max(ZX1 - ZX0, ZY1 - ZY0) + 24.0
+mm_cx, mm_cy = (ZX0 + ZX1) / 2, (ZY0 + ZY1) / 2
+MX0, MY0, MX1, MY1 = mm_cx - mm_side / 2, mm_cy - mm_side / 2, mm_cx + mm_side / 2, mm_cy + mm_side / 2
+mm = Canvas(MM, MM, (224, 207, 162))                                   # street #e0cfa2
+mm_s = MM / mm_side
+def MP(p): return ((p[0] - MX0) * mm_s, (MY1 - p[1]) * mm_s)
+for g in osm["greens"]:
+    ring = clean_ring(g["pts"])
+    if len(ring) >= 3 and ring_touches(ring, MX0, MY0, MX1, MY1):
+        mm.polygon([MP(p) for p in ring], (176, 143, 94))                  # parks like crates #b08f5e
+for ring in building_rings:
+    if ring_touches(ring, MX0, MY0, MX1, MY1):
+        mm.polygon([MP(p) for p in ring], (93, 78, 60))                    # buildings #5d4e3c
+for ring in prop_rings:
+    mm.polygon([MP(p) for p in ring], (176, 143, 94))
+for bs in bomb_sites:
+    cx, cy = bs["loc"][0] / 100, -bs["loc"][1] / 100; hx, hy = bs["extent"][0] / 100, bs["extent"][1] / 100
+    mm.polygon([MP((cx - hx, cy - hy)), MP((cx + hx, cy - hy)), MP((cx + hx, cy + hy)), MP((cx - hx, cy + hy))], (246, 231, 194))   # site floor #f6e7c2
+for i in range(len(ZONE)):
+    mm.line(MP(ZONE[i]), MP(ZONE[(i + 1) % len(ZONE)]), (255, 255, 255), 3)
+mm.save(ROOT / "assets" / "textures" / "minimap.png")
+_ini = ROOT / "unreal" / "ParisBombMap" / "Config" / "DefaultGame.ini"
+_txt = _ini.read_text(encoding="utf-8") if _ini.exists() else ""
+_txt = re.sub(r"\n?\[ParisMap\][^\[]*", "", _txt).rstrip()
+_txt += "\n\n[ParisMap]\n" + "".join(f"Minimap{k}={v:.2f}\n" for k, v in (("X0", MX0), ("Y0", MY0), ("X1", MX1), ("Y1", MY1)))
+_ini.write_text(_txt, encoding="utf-8")
+minimap = {"x0": MX0, "y0": MY0, "x1": MX1, "y1": MY1, "px": MM,
+           "sites": [{"id": bs["id"], "x": bs["loc"][0] / 100, "y": -bs["loc"][1] / 100} for bs in bomb_sites]}
+
 level = {
     "name": layout["name"],
     "units": "Unreal cm; X east, Y south, Z up; yaw degrees (UE convention)",
@@ -1281,6 +1312,7 @@ level = {
     "nav_bounds": nav_bounds,
     "zone_bbox_cm": [ZX0 * 100, -ZY1 * 100, ZX1 * 100, -ZY0 * 100],
     "sun": {"yaw": WAR.get("mood", {}).get("sun_yaw", 35), "pitch": WAR.get("mood", {}).get("sun_pitch", -48)},
+    "minimap": minimap,
     "mood": WAR.get("mood"),
 }
 (MAP / "level.json").write_text(json.dumps(level, indent=1), encoding="utf-8")

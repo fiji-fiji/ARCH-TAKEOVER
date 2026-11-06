@@ -13,6 +13,8 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/Texture2D.h"
+#include "Misc/ConfigCacheIni.h"
 
 FString ABombHUD::FormatTime(float Seconds)
 {
@@ -208,29 +210,34 @@ void ABombHUD::DrawHUD()
 	// ---------------------------------------------------------------- player elements
 	if (Me && !Me->bDead)
 	{
-		// crosshair (not while scoped: the scope has its own lines)
+		// crosshair: FPS Reborn's single dot (4 px, #5dffc0, 1 px dark ring); none while scoped
 		if (!Me->bScoped)
 		{
 			const float CX = W * 0.5f, CY = H * 0.5f;
-			const float Gap = (5.f + Me->Spread * 10.f) * S;
-			const float Len = 12.f * S;
-			const FLinearColor CH = (Now - Me->LastHitMarkerTime < 0.12f) ? FLinearColor(1.f, 0.3f, 0.2f) : FLinearColor(0.4f, 1.f, 0.4f);
-			const float Th = FMath::Max(2.f, 2.5f * S);
-			const FLinearColor Outline(0.f, 0.f, 0.f, 0.6f);
-			DrawRect(Outline, CX - Gap - Len - 1.f, CY - Th * 0.5f - 1.f, Len + 2.f, Th + 2.f);
-			DrawRect(Outline, CX + Gap - 1.f, CY - Th * 0.5f - 1.f, Len + 2.f, Th + 2.f);
-			DrawRect(Outline, CX - Th * 0.5f - 1.f, CY - Gap - Len - 1.f, Th + 2.f, Len + 2.f);
-			DrawRect(Outline, CX - Th * 0.5f - 1.f, CY + Gap - 1.f, Th + 2.f, Len + 2.f);
-			DrawRect(CH, CX - Gap - Len, CY - Th * 0.5f, Len, Th);
-			DrawRect(CH, CX + Gap, CY - Th * 0.5f, Len, Th);
-			DrawRect(CH, CX - Th * 0.5f, CY - Gap - Len, Th, Len);
-			DrawRect(CH, CX - Th * 0.5f, CY + Gap, Th, Len);
+			const float D = FMath::Max(4.f, 4.f * S), O = FMath::Max(1.f, 1.f * S);
+			DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.75f), CX - D * 0.5f - O, CY - D * 0.5f - O, D + 2 * O, D + 2 * O);
+			DrawRect(FLinearColor(0.365f, 1.f, 0.753f), CX - D * 0.5f, CY - D * 0.5f, D, D);
 		}
+		DrawHitFeedback(Me, W, H, Now);
 
-		// damage flash
-		if (Now - Me->LastDamageTime < 0.25f)
+		// you got hit: soft pink flash (0.35 s) + an arrow pointing where it came from
+		if (Now - Me->LastDamageTime < 0.35f)
 		{
-			DrawRect(FLinearColor(1.f, 0.f, 0.f, 0.22f * (1.f - (Now - Me->LastDamageTime) / 0.25f)), 0, 0, W, H);
+			const float HurtT = 0.35f - (Now - Me->LastDamageTime);
+			DrawRect(FLinearColor(1.f, 0.56f, 0.69f, FMath::Min(0.6f, HurtT * 2.f) * 0.45f), 0, 0, W, H);
+			if (Me->bLastDamageHasFrom)
+			{
+				const FVector To = Me->LastDamageFrom - Me->GetActorLocation();
+				const float Rel = FMath::DegreesToRadians(FRotator::NormalizeAxis(To.Rotation().Yaw - Me->GetAimRotation().Yaw));   // 0 = straight ahead
+				const float CX = W * 0.5f, CY = H * 0.5f, R = 112.f * S;
+				const FVector2D Dir(FMath::Sin(Rel), -FMath::Cos(Rel));                    // screen: up = ahead
+				const FVector2D Tip(CX + Dir.X * (R + 14.f * S), CY + Dir.Y * (R + 14.f * S));
+				const FVector2D Side(-Dir.Y, Dir.X);
+				const FVector2D L(CX + Dir.X * R + Side.X * 10.f * S, CY + Dir.Y * R + Side.Y * 10.f * S);
+				const FVector2D Rr(CX + Dir.X * R - Side.X * 10.f * S, CY + Dir.Y * R - Side.Y * 10.f * S);
+				const FLinearColor Pink(1.f, 0.56f, 0.69f, FMath::Min(1.f, HurtT * 4.f));
+				DrawLine(L.X, L.Y, Tip.X, Tip.Y, Pink, 3.f * S); DrawLine(Rr.X, Rr.Y, Tip.X, Tip.Y, Pink, 3.f * S); DrawLine(L.X, L.Y, Rr.X, Rr.Y, Pink, 3.f * S);
+			}
 		}
 
 		// health + kevlar + money (bottom-left)
@@ -372,6 +379,10 @@ void ABombHUD::DrawHUD()
 		Text(Keys, W * 0.5f, H - Sz.Y - 19.f * S, PX_SMALL, Dim, 1);
 	}
 
+	if (Me && GM && !(FPC && FPC->bShopOpen))
+	{
+		DrawMinimap(GM, GS, Me, W, H);
+	}
 	if (Me && Me->bShowScoreboard)
 	{
 		DrawScoreboard(GS, W, H);
@@ -380,6 +391,124 @@ void ABombHUD::DrawHUD()
 	{
 		DrawShop(GM, GS, Me, W, H);
 	}
+}
+
+void ABombHUD::DrawHitFeedback(AFPSCharacter* Me, float W, float H, float Now)
+{
+	const float CX = W * 0.5f, CY = H * 0.5f;
+	// hit marker: four short diagonal lines (3 x 11 px, 13 px out), white / gold for a head hit / pink for a kill, 0.15 s
+	if (Now - Me->LastHitMarkerTime < 0.15f)
+	{
+		const FLinearColor C = Me->LastHitPart == 2 ? FLinearColor(1.f, 0.56f, 0.69f) : (Me->LastHitPart == 1 ? FLinearColor(1.f, 0.82f, 0.25f) : FLinearColor::White);
+		for (int32 i = 0; i < 4; ++i)
+		{
+			const float A = FMath::DegreesToRadians(45.f + 90.f * i);
+			const float R0 = 13.f * S, R1 = 24.f * S;
+			DrawLine(CX + FMath::Cos(A) * R0, CY + FMath::Sin(A) * R0, CX + FMath::Cos(A) * R1, CY + FMath::Sin(A) * R1, FLinearColor(0, 0, 0, 0.5f), 5.f * S);
+			DrawLine(CX + FMath::Cos(A) * R0, CY + FMath::Sin(A) * R0, CX + FMath::Cos(A) * R1, CY + FMath::Sin(A) * R1, C, 3.f * S);
+		}
+	}
+	// damage text under the crosshair: "POP!" / "BULLSEYE 104" / "26", fades over 0.6 s
+	const float DmgT = 0.6f - (Now - Me->LastDmgTextTime);
+	if (DmgT > 0.f)
+	{
+		const float A = FMath::Min(1.f, DmgT * 3.f);
+		FString Txt; FLinearColor C;
+		if (Me->LastHitPart == 2) { Txt = TEXT("POP!"); C = FLinearColor(1.f, 0.56f, 0.69f, A); }
+		else if (Me->LastHitPart == 1) { Txt = FString::Printf(TEXT("BULLSEYE %d"), FMath::RoundToInt(Me->LastHitDamage)); C = FLinearColor(1.f, 0.82f, 0.25f, A); }
+		else { Txt = FString::FromInt(FMath::RoundToInt(Me->LastHitDamage)); C = FLinearColor(1.f, 1.f, 1.f, A); }
+		Text(Txt, CX, CY + 29.f * S, PX_SMALL - 1.f, C, 1);
+	}
+	// head hit: a big gold star pops round the crosshair (0.5 s: scales 0.3 -> 1.5 and fades)
+	const float StarT = (Now - Me->LastDmgTextTime) / 0.5f;
+	if (Me->LastHitPart == 1 && StarT >= 0.f && StarT < 1.f)
+	{
+		const float Sc = StarT < 0.35f ? 0.3f + (1.15f - 0.3f) * (StarT / 0.35f) : 1.15f + 0.35f * ((StarT - 0.35f) / 0.65f);
+		const float A = StarT < 0.35f ? 1.f : 1.f - (StarT - 0.35f) / 0.65f;
+		const float Px = 67.f * Sc;
+		const FVector2D Sz = Measure(TEXT("*"), Px);
+		Text(TEXT("*"), CX, CY - Sz.Y * 0.55f, Px, FLinearColor(1.f, 0.82f, 0.25f, A), 1);
+	}
+}
+
+void ABombHUD::DrawMinimap(ABombGameMode* GM, ABombGameState* GS, AFPSCharacter* Me, float W, float H)
+{
+	// FPS Reborn: the whole map, north up, top-left; teammates always, enemies only while spotted; bomb; you = cone + arrow
+	if (!bMinimapTried)
+	{
+		bMinimapTried = true;
+		MinimapTex = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Textures/T_minimap.T_minimap"));
+		// the square of map metres the texture covers: written by tools/build_map.py into DefaultGame.ini [ParisMap]
+		float X0 = 0.f, Y0 = 0.f, X1 = 0.f, Y1 = 0.f;
+		if (GConfig && GConfig->GetFloat(TEXT("ParisMap"), TEXT("MinimapX0"), X0, GGameIni) && GConfig->GetFloat(TEXT("ParisMap"), TEXT("MinimapY0"), Y0, GGameIni)
+			&& GConfig->GetFloat(TEXT("ParisMap"), TEXT("MinimapX1"), X1, GGameIni) && GConfig->GetFloat(TEXT("ParisMap"), TEXT("MinimapY1"), Y1, GGameIni))
+		{
+			MapMin = FVector2D(X0, Y0); MapMax = FVector2D(X1, Y1);
+		}
+	}
+	if (!MinimapTex || MapMax.X <= MapMin.X) return;
+	const float Size = 320.f * S, X0 = 16.f * S, Y0 = 16.f * S;
+	const float Border = 3.f * S;
+	DrawRect(FLinearColor(1.f, 1.f, 1.f, 0.4f), X0 - Border, Y0 - Border, Size + 2 * Border, Size + 2 * Border);
+	DrawTexture(MinimapTex, X0, Y0, Size, Size, 0.f, 0.f, 1.f, 1.f, FLinearColor(1.f, 1.f, 1.f, 0.92f));
+	auto ToScreen = [&](const FVector& Loc) -> FVector2D
+	{
+		const float xm = Loc.X / 100.f, ym = -Loc.Y / 100.f;
+		return FVector2D(X0 + (xm - MapMin.X) / (MapMax.X - MapMin.X) * Size, Y0 + (MapMax.Y - ym) / (MapMax.Y - MapMin.Y) * Size);
+	};
+	auto Dot = [&](const FVector2D& P, float R, const FLinearColor& C)
+	{
+		DrawRect(FLinearColor(0.063f, 0.078f, 0.102f), P.X - R - 1.f, P.Y - R - 1.f, 2 * R + 2.f, 2 * R + 2.f);
+		DrawRect(C, P.X - R, P.Y - R, 2 * R, 2 * R);
+	};
+	auto Diamond = [&](const FVector2D& P, float R, const FLinearColor& C)
+	{
+		DrawLine(P.X, P.Y - R, P.X + R, P.Y, C, 3.f * S); DrawLine(P.X + R, P.Y, P.X, P.Y + R, C, 3.f * S);
+		DrawLine(P.X, P.Y + R, P.X - R, P.Y, C, 3.f * S); DrawLine(P.X - R, P.Y, P.X, P.Y - R, C, 3.f * S);
+	};
+	// site letters: A pink, B cyan
+	for (const ABombSite* Site : GM->Sites)
+	{
+		if (!Site) continue;
+		const FVector2D P = ToScreen(Site->GetActorLocation());
+		const FLinearColor C = Site->SiteId == TEXT("A") ? FLinearColor(1.f, 0.56f, 0.69f) : FLinearColor(0.31f, 0.78f, 0.82f);
+		Text(Site->SiteId, P.X, P.Y - 10.f * S, PX_SMALL, C, 1);
+	}
+	const float Now = GetWorld()->GetTimeSeconds();
+	const EBombTeam MyTeam = Me->GetTeam();
+	for (const AFPSCharacter* C : GM->Characters)
+	{
+		if (!C || C == Me || C->bDead) continue;
+		const bool bEnemy = C->GetTeam() != MyTeam;
+		if (bEnemy && C->SpottedUntil < Now) continue;
+		const FVector2D P = ToScreen(C->GetActorLocation());
+		Dot(P, (bEnemy ? 4.f : 3.5f) * S, TeamColor(C->GetTeam()));
+		if (C->bHasBomb && !bEnemy) Dot(FVector2D(P.X + 7.f * S, P.Y - 7.f * S), 3.f * S, FLinearColor(0.31f, 0.82f, 0.42f));   // the carrier's badge
+	}
+	if (GM->Bomb)
+	{
+		const FVector2D P = ToScreen(GM->Bomb->GetActorLocation());
+		if (GS->bBombPlanted) Diamond(P, (6.f + FMath::Sin(Now * 8.f) * 1.5f) * S, FLinearColor(0.5f, 1.f, 0.83f));
+		else Diamond(P, 5.f * S, FLinearColor(0.37f, 0.75f, 0.29f));
+	}
+	if (Me->bDead) return;
+	// you: view cone + arrow, in your heading
+	const FVector2D P = ToScreen(Me->GetActorLocation());
+	const float Yaw = FMath::DegreesToRadians(Me->GetAimRotation().Yaw);                   // UE yaw: 0 = +X (east), 90 = +Y (south): screen (cos, sin)
+	const FVector2D F(FMath::Cos(Yaw), FMath::Sin(Yaw));
+	const float ConeR = 34.f * S;
+	for (int32 i = -6; i <= 6; ++i)
+	{
+		const float A = Yaw + i * 0.1f;
+		DrawLine(P.X, P.Y, P.X + FMath::Cos(A) * ConeR, P.Y + FMath::Sin(A) * ConeR, FLinearColor(1.f, 1.f, 1.f, 0.16f), 3.f * S);
+	}
+	if (Me->bHasBomb) Dot(FVector2D(P.X + 7.f * S, P.Y - 7.f * S), 3.f * S, FLinearColor(0.31f, 0.82f, 0.42f));
+	const FVector2D Side(-F.Y, F.X);
+	const float L = 9.f * S;
+	const FVector2D Tip = P + F * L, BL = P - F * L * 0.66f + Side * L * 0.63f, BR = P - F * L * 0.66f - Side * L * 0.63f, Back = P - F * L * 0.33f;
+	const FLinearColor Edge(0.063f, 0.078f, 0.102f);
+	DrawLine(Tip.X, Tip.Y, BL.X, BL.Y, Edge, 4.f * S); DrawLine(BL.X, BL.Y, Back.X, Back.Y, Edge, 4.f * S); DrawLine(Back.X, Back.Y, BR.X, BR.Y, Edge, 4.f * S); DrawLine(BR.X, BR.Y, Tip.X, Tip.Y, Edge, 4.f * S);
+	DrawLine(Tip.X, Tip.Y, BL.X, BL.Y, FLinearColor::White, 2.f * S); DrawLine(BL.X, BL.Y, Back.X, Back.Y, FLinearColor::White, 2.f * S); DrawLine(Back.X, Back.Y, BR.X, BR.Y, FLinearColor::White, 2.f * S); DrawLine(BR.X, BR.Y, Tip.X, Tip.Y, FLinearColor::White, 2.f * S);
 }
 
 void ABombHUD::DrawScoreboard(ABombGameState* GS, float W, float H)

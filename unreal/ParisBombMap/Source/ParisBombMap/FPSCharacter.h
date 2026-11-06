@@ -71,6 +71,13 @@ public:
 	bool bHadBomb = false;                // picked the bomb up this round (bomb hand-off rules)
 	bool bFenceExempt = false;            // dev: teleported for a screenshot, skip the spawn fence
 	FString LastHitWeapon;                // for the kill feed
+	// FPS Reborn HUD feedback: hit marker part (0 body, 1 head, 2 kill), damage text, hurt direction, minimap spotting
+	int32 LastHitPart = 0;
+	float LastHitDamage = 0.f;
+	float LastDmgTextTime = -100.f;
+	FVector LastDamageFrom = FVector::ZeroVector;
+	bool bLastDamageHasFrom = false;
+	float SpottedUntil = -100.f;          // enemies see you on their minimap until then (unsilenced shots, teammates' sight)
 	bool bLastHitHeadshot = false;
 
 	// ---- inventory
@@ -161,11 +168,10 @@ private:
 	float GunBaseScale = 0.6f;
 	float BobTime = 0.f;
 	float BobAmp = 0.f;
-	float KickBack = 0.f;
-	float SwayYaw = 0.f;
-	float SwayPitch = 0.f;
-	float LastCtrlYaw = 0.f;
-	float LastCtrlPitch = 0.f;
+	float Kick = 0.f;                     // viewmodel kick (1, 2 for shotguns), decays 12 / s
+	float Flip = 0.f;                     // revolver buck, 0.4 s
+	float SwingT = 0.f;                   // knife swipe, 0.32 s
+	float SwapT = 0.f;                    // weapon just switched: rises from below, 0.3 s
 	float CrouchCamOffset = 0.f;
 	float CamZ = 70.f;
 	float FlashOffTime = 0.f;

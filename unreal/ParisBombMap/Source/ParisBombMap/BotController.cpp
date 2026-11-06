@@ -336,6 +336,7 @@ void ABotController::Think()
 			NextBurstAt = Now + FMath::Lerp(0.55f, 0.15f, Skill);   // reaction time
 		}
 		LastEnemySeen = Now;
+		if (GM() && M->GetTeam() == GM()->HumanTeam) Seen->SpottedUntil = FMath::Max(Seen->SpottedUntil, Now + 1.2f);   // shows on your minimap
 		if (Task != EBotTask::Engage)
 		{
 			StopMovement();

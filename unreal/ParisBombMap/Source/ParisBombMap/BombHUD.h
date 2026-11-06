@@ -8,6 +8,7 @@ class AFPSCharacter;
 class ABombGameState;
 class ABombGameMode;
 class UFont;
+class UTexture2D;
 
 /** Canvas-drawn HUD: crosshair, health / kevlar, money, weapon + ammo, grenades, round / bomb timer, scores,
  *  interaction progress, callout, kill feed, scoreboard, flash white-out, scope, and the buy menu (B).
@@ -34,6 +35,8 @@ private:
 	FVector2D Measure(const FString& Str, float Px) const;
 	void DrawBar(float X, float Y, float W, float H, float Fraction, const FLinearColor& Fill, const FLinearColor& Back);
 	void DrawScoreboard(ABombGameState* GS, float W, float H);
+	void DrawMinimap(ABombGameMode* GM, ABombGameState* GS, AFPSCharacter* Me, float W, float H);
+	void DrawHitFeedback(AFPSCharacter* Me, float W, float H, float Now);
 	void DrawShop(ABombGameMode* GM, ABombGameState* GS, AFPSCharacter* Me, float W, float H);
 	void DrawCard(ABombGameMode* GM, AFPSCharacter* Me, FName Key, float X, float Y, float CW, float CH, bool bOwned, const FString& Extra);
 	static FString FormatTime(float Seconds);
@@ -43,4 +46,7 @@ private:
 	float FontHeight = 1.f;   // height of the font at scale 1 (measured once)
 	float S = 1.f;            // UI scale = window height / 1080
 	FName HoverBox;
+	UPROPERTY() TObjectPtr<UTexture2D> MinimapTex;
+	bool bMinimapTried = false;
+	FVector2D MapMin = FVector2D::ZeroVector, MapMax = FVector2D::ZeroVector;   // map metres covered by the texture
 };

@@ -46,6 +46,7 @@ That runs, in order:
    bake — bots then use the runtime-generated nav mesh)
 
 Add `-FetchData` to re-download the OpenStreetMap data, the IGN buildings and the photo index first.
+`python -I toolsetch_mapillary.py` adds the Mapillary photos (needs the token file; ≈ 5 min, ≈ 0.9 GB).
 
 ## Play
 
@@ -103,6 +104,16 @@ next to you at round start; your bot teammates only take it 10 s after GO, if yo
   `data/preview_level.png` shows the result top-down before touching Unreal.
 * Gameplay tuning lives in `unreal/ParisBombMap/Source/ParisBombMap/BombGameMode.h` (times, team size) and
   `FPSCharacter.h` (weapon, speeds).
+
+## Credits and licences
+
+* Building footprints, streets, trees: © OpenStreetMap contributors (ODbL).
+* Building heights (BD TOPO) and the aerial orthophoto: IGN, Licence Ouverte / Etalab 2.0.
+* Street-level photos: City of Paris survey "Immergis pour la Ville de Paris" on Panoramax (Etalab 2.0) and
+  Panoramax contributors (CC BY-SA 4.0); Mapillary contributors (CC BY-SA 4.0) — fetched with your own client
+  token in `data/raw/mapillary_token.txt` (never committed).
+* Game rules ported from the author's own FPS Reborn; the *3 Piece Parisian Apartment Building* pack was supplied by
+  the author.
 
 ## Layout
 

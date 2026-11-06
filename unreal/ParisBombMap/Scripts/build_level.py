@@ -108,6 +108,8 @@ for spec in LEVEL["materials"].values():
     for k in (tex_key(spec), spec.get("detail")):
         if k and k not in textures:
             textures[k] = import_texture(k)
+if os.path.exists(os.path.join(TEX_DIR, "minimap.png")):
+    textures["minimap.png"] = import_texture("minimap.png")          # U17 HUD minimap
 log(f"textures: {len(textures)}")
 
 # ====================================================================== materials

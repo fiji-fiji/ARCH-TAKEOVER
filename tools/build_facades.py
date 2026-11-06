@@ -33,6 +33,7 @@ ap.add_argument("--only", default="")
 ap.add_argument("--ppm", type=float, default=90.0)
 ap.add_argument("--feather", type=float, default=0.35, help="seam blend width in metres (0 = hard cuts)")
 ap.add_argument("--no-match", action="store_true", help="skip the per-photo exposure matching")
+ap.add_argument("--no-mapillary", action="store_true", help="use the Panoramax photos only")
 ap.add_argument("--pano-width", type=int, default=8192, help="the 12k panoramas are kept at this width on disk")
 ap.add_argument("--pitch", type=float, default=3.3, help="campaign frame pitch (deg, + = up)")
 ap.add_argument("--debug", action="store_true", help="save the source photos with the projected wall outline (data/_debug/)")
@@ -197,8 +198,20 @@ ring_index = {id(r): i for i, r in enumerate(rings)}
 # ---------------------------------------------------------------- photos
 pics = [p for p in fetch_panoramax.load_index() if BX0 - 80 <= p["x"] <= BX1 + 80 and BY0 - 80 <= p["y"] <= BY1 + 80
         and (p["campaign"] or p["proj"] == "pinhole")]      # contributors' panoramas are not levelled (bike rigs): skip
-# contributors' frames (phones, action cams: unknown pitch) are a last resort only
+# second source: Mapillary (volunteer phones / dashcams / 360s; SfM-corrected position + rotation => known pitch)
+import fetch_mapillary
+if fetch_mapillary.INDEX.exists() and not args.no_mapillary:
+    mly = [p for p in json.loads(fetch_mapillary.INDEX.read_text(encoding="utf-8"))["pictures"]
+           if BX0 - 80 <= p["x"] <= BX1 + 80 and BY0 - 80 <= p["y"] <= BY1 + 80 and fetch_mapillary.image_path(p).exists()]
+    print(f"  + {len(mly)} Mapillary pictures")
+    pics += mly
+# contributors' frames (phones, action cams: unknown pitch) are a last resort only; Mapillary's known-pitch frames sit in between
 WEIGHT = {True: 1.0, False: 0.2}
+MLY_WEIGHT = 0.45
+
+
+def weight(pic):
+    return MLY_WEIGHT if pic.get("src") == "mapillary" else WEIGHT[bool(pic["campaign"])]
 PX = np.array([p["x"] for p in pics]); PY = np.array([p["y"] for p in pics])
 print(f"{len(buildings)} buildings to texture, {len(rings)} footprints, {len(pics)} photos in range")
 
@@ -211,7 +224,7 @@ def load_image(pic):
     pid = pic["id"]
     if pid in _cache:
         return _cache[pid]
-    path = fetch_panoramax.image_path(pic)
+    path = fetch_mapillary.image_path(pic) if pic.get("src") == "mapillary" else fetch_panoramax.image_path(pic)
     im = Image.open(path)
     PW = args.pano_width
     if im.width > PW:                        # the 12k panoramas: keep a smaller copy on disk (memory)
@@ -248,13 +261,56 @@ def box_blur(m, r):
     return m
 
 
+_rot_cache = {}
+
+
+def rot_matrix(rvec):
+    """Axis-angle -> 3x3 rotation (Rodrigues), cached per picture."""
+    key = tuple(rvec)
+    if key in _rot_cache:
+        return _rot_cache[key]
+    v = np.array(rvec, np.float64); th = float(np.linalg.norm(v))
+    if th < 1e-12:
+        R = np.eye(3)
+    else:
+        k = v / th; K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+        R = np.eye(3) * math.cos(th) + math.sin(th) * K + (1 - math.cos(th)) * np.outer(k, k)
+    _rot_cache[key] = R
+    return R
+
+
 def project(pic, dims, X, Y, Z, nrm):
     """Per-texel image coordinates + quality score (0 = cannot see). X, Y, Z world metres, dims = (W, H)."""
     W, H = dims
-    cx, cy, cz = pic["x"], pic["y"], args.cam_h
+    cx, cy, cz = pic["x"], pic["y"], pic.get("cam_h", args.cam_h)
     vx, vy, vz = X - cx, Y - cy, Z - cz
     dist = np.sqrt(vx * vx + vy * vy + vz * vz) + 1e-6
     cos_inc = -(vx * nrm[0] + vy * nrm[1]) / dist                   # incidence on the wall
+    if pic.get("rot"):
+        # Mapillary: full OpenSfM orientation (world ENU -> camera: x right, y down, z forward), roll included
+        R = rot_matrix(pic["rot"])
+        xc = R[0, 0] * vx + R[0, 1] * vy + R[0, 2] * vz
+        yc = R[1, 0] * vx + R[1, 1] * vy + R[1, 2] * vz
+        zc = R[2, 0] * vx + R[2, 1] * vy + R[2, 2] * vz
+        if pic["proj"] == "equirect":
+            yaw = np.arctan2(xc, zc)
+            pitch = np.arctan2(-yc, np.sqrt(xc * xc + zc * zc))
+            px = (yaw / (2 * math.pi) + 0.5) * W
+            py = (0.5 - pitch / math.pi) * H
+            dens = (W / (2 * math.pi)) / dist
+            edge = np.ones_like(px)
+            valid = (cos_inc > 0.2) & (py > 0) & (py < H - 1)
+        else:
+            F = pic["focal"] * max(W, H)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                px = W / 2 + F * xc / zc
+                py = H / 2 + F * yc / zc
+            dens = F / dist
+            ex = np.abs(px - W / 2) / (W / 2); ey = np.abs(py - H / 2) / (H / 2)
+            edge = 1.0 - 0.35 * np.clip(np.maximum(ex, ey), 0, 1) ** 2
+            valid = (zc > 0.5) & (cos_inc > 0.2) & (px > 0) & (px < W - 1) & (py > 0) & (py < H - 1)
+        score = np.where(valid, dens * cos_inc * edge * weight(pic), 0.0)
+        return px, py, score
     az = math.radians(pic["az"])
     fwd = (math.sin(az), math.cos(az)); right = (math.cos(az), -math.sin(az))
     xr = vx * right[0] + vy * right[1]
@@ -268,7 +324,7 @@ def project(pic, dims, X, Y, Z, nrm):
         edge = np.ones_like(px)
         valid = (cos_inc > 0.2) & (py > 0) & (py < H - 1)
     else:
-        pitch = math.radians(args.pitch if pic["campaign"] else 0.0)
+        pitch = math.radians(pic["pitch"] if "pitch" in pic else (args.pitch if pic["campaign"] else 0.0))
         xf2 = xf * math.cos(pitch) + vz * math.sin(pitch)
         xu = -xf * math.sin(pitch) + vz * math.cos(pitch)
         F = (W / 2) / math.tan(math.radians(pic["fov"]) / 2)
@@ -279,7 +335,7 @@ def project(pic, dims, X, Y, Z, nrm):
         ex = np.abs(px - W / 2) / (W / 2); ey = np.abs(py - H / 2) / (H / 2)
         edge = 1.0 - 0.35 * np.clip(np.maximum(ex, ey), 0, 1) ** 2
         valid = (xf2 > 0.5) & (cos_inc > 0.2) & (px > 0) & (px < W - 1) & (py > 0) & (py < H - 1)
-    score = dens * cos_inc * edge * WEIGHT[bool(pic["campaign"])]
+    score = dens * cos_inc * edge * weight(pic)
     score = np.where(valid, score, 0.0)
     return px, py, score
 
@@ -301,9 +357,9 @@ def wall_candidates(b, i, p, q, d, nrm, L, h):
             diff = (bearing - pic["az"] + 180) % 360 - 180
             if abs(diff) > pic["fov"] / 2 + 8:
                 continue
-            prior = cosang / max(dd, 4.0) * WEIGHT[bool(pic["campaign"])]
+            prior = cosang / max(dd, 4.0) * weight(pic)
         else:
-            prior = cosang / max(dd, 4.0) * WEIGHT[bool(pic["campaign"])]
+            prior = cosang / max(dd, 4.0) * weight(pic)
         scored.append((prior, k))
     scored.sort(reverse=True)
     scored = scored[:120]
@@ -360,7 +416,7 @@ for bi, b in enumerate(buildings):
     if not faces:
         continue
     if not args.no_download:
-        need = {c["id"]: c for f in faces for c in f["cands"]}
+        need = {c["id"]: c for f in faces for c in f["cands"] if c.get("src") != "mapillary"}
         fetch_panoramax.ensure_images(list(need.values()))
     # texture size: fit the atlas (the px/m is reduced until the walls fit a 4096 x 4096 sheet)
     ppm = args.ppm
