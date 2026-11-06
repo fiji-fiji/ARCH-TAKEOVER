@@ -229,6 +229,49 @@
    "roughness": 0.55,
    "metallic": 0.6
   },
+  "M_DarkMetal": {
+   "color": [
+    0.16,
+    0.17,
+    0.18
+   ],
+   "roughness": 0.5,
+   "metallic": 0.8
+  },
+  "M_LightMetal": {
+   "color": [
+    0.55,
+    0.56,
+    0.58
+   ],
+   "roughness": 0.35,
+   "metallic": 0.9
+  },
+  "M_GunGrey": {
+   "color": [
+    0.22,
+    0.22,
+    0.23
+   ],
+   "roughness": 0.6,
+   "metallic": 0.3
+  },
+  "M_DarkWood": {
+   "color": [
+    0.28,
+    0.18,
+    0.11
+   ],
+   "roughness": 0.8
+  },
+  "M_GunGreen": {
+   "color": [
+    0.22,
+    0.28,
+    0.19
+   ],
+   "roughness": 0.7
+  },
   "M_Gear": {
    "color": [
     0.16,
@@ -466,6 +509,10 @@
    "texture_path": "assets/facades/bld_r551281.jpg",
    "roughness": 0.85
   },
+  "M_Fac_r551282": {
+   "texture_path": "assets/facades/bld_r551282.jpg",
+   "roughness": 0.85
+  },
   "M_Fac_r551283": {
    "texture_path": "assets/facades/bld_r551283.jpg",
    "roughness": 0.85
@@ -524,6 +571,10 @@
   },
   "M_Fac_w54964080": {
    "texture_path": "assets/facades/bld_w54964080.jpg",
+   "roughness": 0.85
+  },
+  "M_Fac_w54964106": {
+   "texture_path": "assets/facades/bld_w54964106.jpg",
    "roughness": 0.85
   },
   "M_Fac_w54964121": {
@@ -1893,7 +1944,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 242
+   "tris": 216
   },
   "bld_r550527": {
    "file": "meshes/bld_r550527.obj",
@@ -1904,7 +1955,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 294
+   "tris": 268
   },
   "bld_r550529": {
    "file": "meshes/bld_r550529.obj",
@@ -2106,10 +2157,11 @@
    "slots": [
     "M_Shopfront",
     "M_Facade",
+    "M_Fac_r551282",
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 184
+   "tris": 132
   },
   "bld_r551283": {
    "file": "meshes/bld_r551283.obj",
@@ -2368,7 +2420,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 363
+   "tris": 285
   },
   "bld_w54963934": {
    "file": "meshes/bld_w54963934.obj",
@@ -2389,7 +2441,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 70
+   "tris": 44
   },
   "bld_w54964004": {
    "file": "meshes/bld_w54964004.obj",
@@ -2449,10 +2501,11 @@
    "slots": [
     "M_Shopfront",
     "M_Facade",
+    "M_Fac_w54964106",
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 451
+   "tris": 395
   },
   "bld_w54964121": {
    "file": "meshes/bld_w54964121.obj",
@@ -3359,7 +3412,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 235
+   "tris": 209
   },
   "bld_w55018777": {
    "file": "meshes/bld_w55018777.obj",
@@ -3582,7 +3635,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 217
+   "tris": 203
   },
   "bld_w55025970": {
    "file": "meshes/bld_w55025970.obj",
@@ -4375,7 +4428,7 @@
     "M_Fac_w56290843",
     "M_Roof"
    ],
-   "tris": 428
+   "tris": 420
   },
   "bld_w56301517": {
    "file": "meshes/bld_w56301517.obj",
@@ -4386,7 +4439,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 286
+   "tris": 244
   },
   "bld_w56301534": {
    "file": "meshes/bld_w56301534.obj",
@@ -4529,7 +4582,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 297
+   "tris": 271
   },
   "bld_w56319991": {
    "file": "meshes/bld_w56319991.obj",
@@ -4540,7 +4593,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 168
+   "tris": 142
   },
   "bld_w56319992": {
    "file": "meshes/bld_w56319992.obj",
@@ -4631,13 +4684,13 @@
   "bld_w56320007": {
    "file": "meshes/bld_w56320007.obj",
    "slots": [
+    "M_Fac_w56320007",
     "M_Shopfront",
     "M_Facade",
-    "M_Fac_w56320007",
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 141
+   "tris": 127
   },
   "bld_w56320008": {
    "file": "meshes/bld_w56320008.obj",
@@ -5673,7 +5726,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 188
+   "tris": 110
   },
   "bld_w56472899": {
    "file": "meshes/bld_w56472899.obj",
@@ -5684,7 +5737,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 132
+   "tris": 106
   },
   "bld_w63195409": {
    "file": "meshes/bld_w63195409.obj",
@@ -6363,7 +6416,7 @@
     "M_Roof",
     "M_Stone"
    ],
-   "tris": 96
+   "tris": 70
   },
   "ground": {
    "file": "meshes/ground.obj",

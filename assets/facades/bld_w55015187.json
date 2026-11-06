@@ -1,1 +1,1 @@
-{"w55015187": {"atlas": "assets/facades/bld_w55015187.jpg", "w": 1024, "h": 2048, "ppm": 90.0, "height": 18.5, "faces": {"8": {"x0": 0, "y0": 0, "x1": 253, "y1": 1665, "coverage": 0.972, "photos": 3}, "9": {"x0": 253, "y0": 0, "x1": 489, "y1": 1665, "coverage": 0.998, "photos": 4}}}}
+{"w55015187": {"atlas": "assets/facades/bld_w55015187.jpg", "w": 1024, "h": 2048, "ppm": 90.0, "height": 18.5, "faces": {"8": {"x0": 0, "y0": 0, "x1": 253, "y1": 1665, "coverage": 1.0, "photos": 7}, "9": {"x0": 253, "y0": 0, "x1": 489, "y1": 1665, "coverage": 1.0, "photos": 5}}}}

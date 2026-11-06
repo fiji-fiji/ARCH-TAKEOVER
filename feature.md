@@ -21,7 +21,7 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | D10| Real facades: street-level photos (Panoramax, City of Paris campaign) projected onto every street-facing wall | ✅ verified in game (232 buildings / 726 walls, `data/screenshot_facades.png`) |
 | D11| Real ground: IGN aerial orthophoto on roads and pavements, blended with asphalt detail | ✅ verified in game (`data/screenshot_ground.png`: real markings, zebra crossings) |
 | D12| Facade quality pass: 90 px/m (was 40), 8k panoramas (was 6k), exposure matching between the photos of a wall, feathered seams (0.35 m) | ✅ verified: 232 buildings / 726 walls at 89 px/m avg, 147 MB, `data/screenshot_facades_hd.png`, 110 FPS unchanged |
-| D13| Second photo source: Mapillary (volunteer phone / dashcam / 360 photos, CC BY-SA 4.0) fills the streets and upper floors the city survey misses | 🟡 index + download done, facades regenerating |
+| D13| Second photo source: Mapillary (volunteer phone / dashcam / 360 photos, CC BY-SA 4.0) fills the streets and upper floors the city survey misses — 2011 photos indexed, full SfM rotation per photo, weight 0.45 vs the city survey | ✅ verified: 234 buildings / 755 walls, 3263 photo uses (was 2900 with Panoramax alone), `data/screenshot_facades_mly.png`, 97 FPS |
 | L1 | Playable zone 345 m × 415 m — classic 5v5 proportions                | ✅ done (enlarged at user request) |
 | L2 | Spawns: attackers at Rue Réaumur / Arts-et-Métiers, defenders at the front door | ✅ done |
 | L3 | Bomb sites: A = Nazareth / Passage du Vertbois, B = Square Émile-Chautemps | ✅ done |
