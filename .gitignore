@@ -12,3 +12,5 @@ __pycache__
 data/_debug/
 data/raw/panoramax/img/
 data/_*
+assets/models/*/_textures_src/
+assets/models/*/*.fbm/

@@ -30,14 +30,16 @@ That runs, in order:
 1. `tools/make_textures.py` – procedural PNG textures → `assets/textures/`; `tools/make_sounds.py` –
    synthesised sound effects (guns, grenades, shop) → `assets/sounds/`; `tools/fetch_ortho.py` – the IGN aerial orthophoto for the
    **real ground** → `assets/ortho/` (first run only, or with `-FetchData`)
-2. `tools/build_facades.py` – the **real facades**: re-projects the City of Paris street photos
+2. `tools/import_blender_assets.py` – (optional, needs Blender) exports the user-supplied Parisian building pack into
+   `assets/models/parisian_block/` (the exported pieces are committed, so this only runs when the pack changes)
+3. `tools/build_facades.py` – the **real facades**: re-projects the City of Paris street photos
    (Panoramax) onto every street-facing wall → `assets/facades/*.jpg` (≈ 15 min, downloads ≈ 1 GB of
    photos the first time; `-SkipFacades` keeps the existing atlases)
-3. `tools/build_map.py` – OSM + IGN heights + facade atlases → `data/map/meshes/*.obj` +
+4. `tools/build_map.py` – OSM + IGN heights + facade atlases + war-zone layer → `data/map/meshes/*.obj` +
    `data/map/level.json` (+ `data/preview_level.png`)
-4. `tools/ue/build_project.ps1` – compiles the C++ modules with UnrealBuildTool
-5. `tools/ue/build_level.ps1` – runs `Scripts/build_level.py` inside `UnrealEditor-Cmd` to import the
-   textures and meshes (only the ones whose source file is newer than the asset), create materials,
+5. `tools/ue/build_project.ps1` – compiles the C++ modules with UnrealBuildTool
+6. `tools/ue/build_level.ps1` – runs `Scripts/build_level.py` inside `UnrealEditor-Cmd` to import the
+   textures, meshes and FBX models (only the ones whose source file is newer than the asset), create materials,
    assemble and save `/Game/Maps/L_SaintMartin`, and build the nav mesh
    (first run ≈ 16 min of mesh import + 14 min of nav-mesh generation; add `-SkipNav` to skip the
    bake — bots then use the runtime-generated nav mesh)
@@ -94,7 +96,8 @@ next to you at round start; your bot teammates only take it 10 s after GO, if yo
 
 ## Changing the map
 
-* Edit `data/map/layout.json` (zone, spawns, sites, cut-offs, covered passages, callouts, props), then run
+* Edit `data/map/layout.json` (zone, spawns, sites, cut-offs, covered passages, callouts, props, and the `warzone`
+  section: model pieces, dressing props, lighting mood), then run
   `python -I tools\build_map.py` and `tools\ue\build_level.ps1 -ForceReimport`.
   `data/preview_level.png` shows the result top-down before touching Unreal.
 * Gameplay tuning lives in `unreal/ParisBombMap/Source/ParisBombMap/BombGameMode.h` (times, team size) and

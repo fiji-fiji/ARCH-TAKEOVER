@@ -682,6 +682,21 @@ void ABombGameMode::Tick(float DeltaSeconds)
 				if (Best) PC->SetControlRotation((Best->GetActorLocation() + FVector(0, 0, 20.f) - H->GetEyeLocation()).Rotation());
 			}
 		}
+		FString Tele;
+		if (!bAutoShotTaken && T >= AutoShotAt - 0.6f && FParse::Value(FCommandLine::Get(), TEXT("pbm_teleport="), Tele, false))
+		{
+			// dev: -pbm_teleport=X,Y,Z,Yaw,Pitch (UE cm / degrees) places the human for the screenshot
+			TArray<FString> Parts; Tele.ParseIntoArray(Parts, TEXT(","));
+			AFPSCharacter* H = HumanCharacter(); APlayerController* PC = HumanController();
+			if (H && PC && Parts.Num() >= 4)
+			{
+				const FVector Loc(FCString::Atof(*Parts[0]), FCString::Atof(*Parts[1]), FCString::Atof(*Parts[2]));
+				const FRotator Rot(Parts.Num() >= 5 ? FCString::Atof(*Parts[4]) : 0.f, FCString::Atof(*Parts[3]), 0.f);
+				H->bFenceExempt = true;
+				H->TeleportTo(Loc, Rot, false, true);
+				PC->SetControlRotation(Rot);
+			}
+		}
 		if (!bAutoShotTaken && T >= AutoShotAt - 1.5f && FParse::Param(FCommandLine::Get(), TEXT("pbm_openshop")))
 		{
 			if (AFPSPlayerController* PC = Cast<AFPSPlayerController>(HumanController())) PC->OpenShop();

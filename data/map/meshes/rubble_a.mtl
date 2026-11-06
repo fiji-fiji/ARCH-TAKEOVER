@@ -1,0 +1,10 @@
+newmtl M_Soil
+Kd 0.8 0.8 0.8
+newmtl M_Concrete
+Kd 0.8 0.8 0.8
+newmtl M_BrickRed
+Kd 0.8 0.8 0.8
+newmtl M_Stone
+Kd 0.8 0.8 0.8
+newmtl M_Wood
+Kd 0.8 0.8 0.8

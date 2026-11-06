@@ -52,8 +52,8 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | G9 | Bots buy with the FPS Reborn logic (save when poor, rifles + kevlar when rich, pistol-round sidearms), use smokes / flashes on site hits and frags on seen enemies | ✅ verified (run log: pistol-round sidearms, kevlar, rifles in round 2, grenades) |
 | G10| HUD extensions: money + gain popup, weapon name and slot, armour, grenade pips, scoreboard money, kill feed with weapon | ✅ verified (`data/screenshot_live.png`, `data/screenshot_round2.png`) |
 | G11| Generated gun models for the roster (realistic silhouettes, no flowers): pistols, revolver, machine pistol, sawn-off, SMG, pump shotgun, rifles, scout, long rifle, knife, three grenades | ✅ built — 16 meshes imported; the P9 is visible in first person |
-| A1 | Parisian building Blender asset (user-supplied 3-piece Haussmann block) imported with its textures, split into pieces | 🟡 planned |
-| A2 | War-zone dressing: ruined blocks from A1, rubble, sandbags, barricades, burnt cars, craters, smoke columns, overcast haze — the photo facades stay so the streets remain recognisable | 🟡 planned |
+| A1 | Parisian building Blender asset (user-supplied 3-piece Haussmann block) split by Blender into 8 textured pieces (3 intact blocks, 3 shelled ruins, 2 facade slabs) and imported as FBX | ✅ built — pieces previewed in Blender, imported with textures (`/Game/Models/parisian_block`) |
+| A2 | War-zone dressing: 7 A1 pieces placed (B site ruin, Sébastopol chokepoint, facade slabs), 53 props (rubble, sandbags, hedgehogs, jersey barriers, burnt cars, craters, smoke columns), overcast dusty mood — photo facades untouched | ✅ built — see `data/screenshot_warzone_*.png` |
 | —  | Online play (replication)                                            | ❌ out of scope for now |
 
 ---
@@ -400,25 +400,49 @@ round 2 (attackers won) bots hold AR-7 / AR-7S / SMG-9 / PS-12 / SR-30 with kevl
 after the lost round. Gotcha: the bots' `BuyPhase()` must run after the phase is set to Freeze (the shop is closed otherwise).
 Dev switch `-pbm_openshop` opens the buy menu 1.5 s before the auto screenshot.
 
-## A1. Parisian building asset — 🟡 planned
-**What:** the user-supplied *3 Piece Parisian Apartment Building* (Blender / FBX / OBJ, 625 k vertices, 46 m ×
-18 m × 19 m, Downloads › *Parisian Building Blender Assets*, textures in `Textures.zip`) is copied into
-`assets/models/parisian_block/`, split by its named parts (walls, end walls, lower facade, windows, doors,
-balconies, roof, drain pipes) with Blender in the background, and imported into Unreal with its textures
-(painted plaster walls, terracotta roof, window planes).
-**How:** `tools/import_blender_assets.py` (runs `blender -b -P`), `build_level.py` FBX import block.
-**Test:** the block appears in the level with textures; the split pieces exist as separate static meshes.
+## A1. Parisian building asset — ✅ built
+**What:** the user-supplied *3 Piece Parisian Apartment Building* (Blender pack in Downloads › *Parisian Building
+Blender Assets*: 231 mesh objects, 625 k vertices, 3 buildings parented to control empties, 28 materials whose
+images mostly point at the author's machine, `Textures.zip` next to it) becomes 8 game pieces in
+`assets/models/parisian_block/`: `block_center` (10.2 × 11.0 × 19.2 m), `block_end` (10.2 × 7.0 m), `block_corner`
+(17.8 × 14.3 m), `ruin_center` / `ruin_end` / `ruin_corner` (the same shelled: roof and upper corners sheared off
+along three slanted planes), `wall_chunk_a` / `wall_chunk_b` (a single surviving street facade, 1.3–1.8 m thick,
+jagged top). Each FBX ships its textures in a `.fbm` folder; `pieces.json` lists sizes.
+**How:** `tools/import_blender_assets.py` runs Blender 5.2 headless with `tools/blender/export_parisian.py`: unzips the
+textures, unpacks the ones packed in the .blend, rebuilds every material as Principled BSDF + base-colour image (the
+red terracotta wall texture is desaturated and brightened into `ParisStone_COL_4K.jpg`, Paris being cream limestone),
+box-projects UVs on the wall-type parts (their materials used object-space mapping), decimates parts above 6 000
+polygons to 35 %, clears the parent empties, joins each building, recentres it on its footprint, cuts the ruins and
+slabs with `bmesh.ops.bisect_plane`, and exports FBX (−Y forward, Z up, textures copied). `build_level.py` imports
+the FBX files through a second Interchange pipeline (`/Game/Pipelines/FbxPipeline`, materials + textures on) into
+`/Game/Models/parisian_block/`, complex collision; `build_map.py` places instances from `layout.json › warzone.models`.
+**Test:** `python -I tools/import_blender_assets.py` (≈ 25 s) prints the 8 pieces; Blender workbench previews show
+textured Haussmann facades with mansard roofs and dormers. Gotchas: the parts are parented (clear the parent and keep
+the world matrix before applying transforms, or the local cuts miss); `FParse::Value` stops at commas.
+**Source:** the pack stays in Downloads (339 MB); only the exported pieces (≈ 60 MB) live in the workspace.
 
-## A2. War-zone dressing — 🟡 planned
-**What:** the neighbourhood stays recognisable (photo facades, real ground, street layout) but reads as a
-front line: the A1 block pieces assembled into shelled / half-collapsed buildings on the empty lots and as
-facade chunks blocking some lanes, rubble piles, sandbag nests at the sites, Czech hedgehogs and concrete
-barricades on the boulevards, burnt-out cars, craters in the asphalt, smoke columns, dust haze and a cold
-overcast sun.
-**How:** `data/map/layout.json` `warzone` section (placements), `tools/build_map.py` new prop builders
-(rubble, sandbags, hedgehog, jersey barrier, burnt car, crater disc) + instances of the A1 pieces,
-`build_level.py` (haze / lighting / smoke particles as Niagara-free emissive planes).
-**Test:** screenshots from both spawns and the sites.
+## A2. War-zone dressing — ✅ built
+**What:** the neighbourhood stays recognisable (photo facades, real ground, street layout untouched) but reads as a
+front line. `layout.json › warzone`:
+* `models` — 7 A1 pieces: a shelled block in the west of Square Émile-Chautemps (site B), a corner ruin collapsed
+  into Boulevard de Sébastopol south (a chokepoint), a ruin on Sébastopol north, a surviving facade along the
+  boulevard, facade slabs at Mid plaza and on Rue N-D-de-Nazareth west of A, an intact block by the attackers' spawn.
+* `props` — 53 placed: rubble mounds (3 variants, random boxes on a cone + beams), sandbag walls, Czech hedgehogs,
+  jersey barriers, burnt-out cars (flat tyres, scorched ground), craters (scorch disc + debris ring), smoke columns
+  (stacked drifting spheres over a fire glow, visible across the map).
+* `mood` — low cold sun (pitch −24°, intensity 3.2, bluish white), stronger sky light, dusty haze (fog density 0.045,
+  warm grey colour, from 15 m), saturation 0.78, contrast 1.06.
+**How:** `build_map.py` generates the dressing meshes (`make_rubble`, `make_sandbags`, `make_hedgehog`, `make_jersey`,
+`make_burnt_car`, `make_crater`, `make_smoke_column`) and snaps every model / prop to the nearest free spot
+(`snap_spot`: spiral search up to 16 m; corners, centre and mid-edges outside every building with 1 m clearance,
+outside the bomb-site boxes for models, 4 m clear of the spawns, and unless `may_block` is set at least 3 m of
+carriageway left beside the nearest road axis); the footprints join `prop_rings` so spawn points avoid them.
+Model actors carry `"model": "<pack>/<piece>"` in `level.json`; `build_level.py` resolves them from `/Game/Models/`
+and applies `mood` to the sun, sky light, fog and post-process. Dev switch `-pbm_teleport=X,Y,Z,Yaw,Pitch` (UE cm /
+degrees) places the human for a screenshot.
+**Test:** `build_map.py` prints the snapped positions; `play.ps1 -AutoShot 7 -Extra -pbm_teleport=-8200,9800,180,151,-4`
+shows the B site ruin, `-pbm_teleport=-18300,26200,180,-54,2` the Sébastopol chokepoint.
+**Verified:** `data/screenshot_warzone_b.png`, `data/screenshot_warzone_sebasto.png`.
 
 ## Verification log
 
@@ -438,4 +462,8 @@ overcast sun.
 - Sounds are synthesised (no recorded samples); no multiplayer replication (single machine only).
 - Photo facades bake in parked cars, pedestrians and the survey-day lighting; the orthophoto ground bakes in
   cars and tree canopies; untextured walls (courtyards, backs) keep the procedural facade.
-- Callout text is mirrored when seen from behind.
+- Callout labels now turn to face the camera (no longer mirrored).
+- War zone: the ruins are plane cuts of the intact pack (no interior debris, open cut faces), the smoke columns are
+  static stacked spheres, the facade slabs stand alone; the park's low-poly trees hide the B-site ruin from some angles.
+- Game rules still to playtest by hand: win-by-two / overtime, grenade detonations, dropped-gun pickup, the human
+  bomb hand-off (play as attacker with M).

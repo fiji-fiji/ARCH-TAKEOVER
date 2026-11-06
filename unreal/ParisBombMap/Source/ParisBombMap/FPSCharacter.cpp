@@ -957,7 +957,7 @@ void AFPSCharacter::Tick(float DeltaSeconds)
 	}
 
 	// before GO: an invisible fence keeps the human inside the spawn area
-	if (GS && GS->Phase == ERoundPhase::Freeze && !bFrozen && !bIsBot)
+	if (GS && GS->Phase == ERoundPhase::Freeze && !bFrozen && !bIsBot && !bFenceExempt)
 	{
 		if (ABombGameMode* GM = Cast<ABombGameMode>(UGameplayStatics::GetGameMode(this)))
 		{

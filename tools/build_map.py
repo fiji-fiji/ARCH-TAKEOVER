@@ -983,6 +983,194 @@ for i, pr in enumerate(layout["props"]["list"]):
     sx, sy = PROP_FOOTPRINT[t]
     prop_rings.append([(at[0] + rot2(c, rot)[0], at[1] + rot2(c, rot)[1]) for c in [(-sx / 2, -sy / 2), (sx / 2, -sy / 2), (sx / 2, sy / 2), (-sx / 2, sy / 2)]])
 
+# ======================================================================= war zone (layout.warzone): user-supplied building pieces + dressing
+WAR = layout.get("warzone", {})
+MATERIALS.update({
+    "M_Sandbag":   {"color": [0.58, 0.52, 0.38], "roughness": 1.0},
+    "M_Rust":      {"color": [0.30, 0.17, 0.10], "roughness": 0.85, "metallic": 0.3},
+    "M_Burnt":     {"color": [0.07, 0.065, 0.06], "roughness": 0.95},
+    "M_Scorch":    {"color": [0.05, 0.045, 0.04], "roughness": 1.0},
+    "M_BrickRed":  {"color": [0.48, 0.26, 0.20], "roughness": 0.95},
+    "M_SmokeDark": {"color": [0.22, 0.21, 0.20], "roughness": 1.0},
+    "M_Fire":      {"color": [1.0, 0.45, 0.1], "roughness": 0.9, "emissive": [6.0, 1.6, 0.2]},
+})
+
+
+def make_rubble(name, seed, radius=2.2, count=16):
+    """A mound of broken masonry: random boxes piled on a low cone."""
+    r = random.Random(seed)
+    mw = MeshWriter(name)
+    mw.cone("M_Soil", (0, 0), radius, 0.0, radius * 0.45, segs=12)
+    for i in range(count):
+        a = r.uniform(0, 2 * math.pi); d = r.uniform(0, radius * 0.9)
+        sx, sy, sz = r.uniform(0.3, 1.3), r.uniform(0.25, 0.9), r.uniform(0.15, 0.6)
+        z0 = max(0.0, (1 - d / radius) * radius * 0.4 - sz * 0.5)
+        mat = r.choice(["M_Concrete", "M_Stone", "M_BrickRed", "M_Concrete"])
+        mw.box(mat, (math.cos(a) * d, math.sin(a) * d), (sx, sy, sz), z0, yaw=r.uniform(0, 180))
+    for i in range(3):                                                    # a few planks / beams
+        a = r.uniform(0, 2 * math.pi); d = r.uniform(0, radius * 0.6)
+        mw.box(r.choice(["M_Wood", "M_Rust"]), (math.cos(a) * d, math.sin(a) * d), (r.uniform(1.5, 3.0), 0.12, 0.12), r.uniform(0.2, 0.8), yaw=r.uniform(0, 180))
+    return mw
+
+
+def make_sandbags(name, length=3.0, rows=3):
+    mw = MeshWriter(name)
+    r = random.Random(7)
+    for row in range(rows):
+        n = int(length / 0.62)
+        for i in range(n):
+            x = -length / 2 + 0.31 + i * 0.62 + (0.31 if row % 2 else 0.0)
+            mw.box("M_Sandbag", (x, r.uniform(-0.03, 0.03)), (0.6, 0.34, 0.24), row * 0.23, yaw=r.uniform(-6, 6))
+    return mw
+
+
+def make_hedgehog(name):
+    mw = MeshWriter(name)
+    mw.box("M_Rust", (0, 0), (2.0, 0.14, 0.14), 0.75, yaw=0)
+    mw.box("M_Rust", (0, 0), (2.0, 0.14, 0.14), 0.75, yaw=90)
+    mw.box("M_Rust", (0, 0), (0.14, 0.14, 1.65), 0.0)
+    return mw
+
+
+def make_jersey(name):
+    mw = MeshWriter(name)
+    mw.box("M_Concrete", (0, 0), (3.0, 0.62, 0.25), 0.0)
+    mw.box("M_Concrete", (0, 0), (3.0, 0.42, 0.35), 0.25)
+    mw.box("M_Concrete", (0, 0), (3.0, 0.24, 0.25), 0.60)
+    return mw
+
+
+def make_burnt_car(name):
+    mw = MeshWriter(name)
+    mw.box("M_Burnt", (0, 0), (4.2, 1.75, 0.55), 0.28)                    # body, sagging
+    mw.box("M_Burnt", (-0.2, 0), (2.2, 1.6, 0.55), 0.83)                  # cabin, no glass
+    mw.box("M_Rust", (1.9, 0), (0.5, 1.5, 0.25), 0.35)                    # bonnet edge
+    for sx in (-1.35, 1.35):
+        for sy in (-0.85, 0.85):
+            mw.box("M_Tyre", (sx, sy), (0.55, 0.2, 0.42), 0.0)            # flat tyres
+    mw.box("M_Scorch", (0, 0), (5.5, 2.6, 0.02), 0.0)                      # scorched ground
+    return mw
+
+
+def make_crater(name, radius=2.6):
+    mw = MeshWriter(name)
+    disc = [(radius * math.cos(2 * math.pi * k / 14), radius * math.sin(2 * math.pi * k / 14)) for k in range(14)]
+    mw.polygon_cap("M_Scorch", disc, 0.015, 2.0)
+    r = random.Random(11)
+    for k in range(12):
+        a = 2 * math.pi * k / 12 + r.uniform(-0.2, 0.2); d = radius * r.uniform(0.75, 1.05)
+        mw.box(r.choice(["M_Asphalt", "M_Concrete", "M_Soil"]), (math.cos(a) * d, math.sin(a) * d), (r.uniform(0.3, 0.8), r.uniform(0.3, 0.6), r.uniform(0.1, 0.3)), 0.0, yaw=r.uniform(0, 180))
+    return mw
+
+
+def make_smoke_column(name, height=42.0):
+    """A static plume: stacked spheres drifting with the wind, a fire glow at the base."""
+    mw = MeshWriter(name)
+    mw.box("M_Fire", (0, 0), (2.2, 2.2, 0.8), 0.0)
+    for i in range(9):
+        t = i / 8
+        z = 1.5 + t * height
+        rad = 1.4 + t * 6.0
+        mw.sphere("M_SmokeDark", (t * t * 14.0, t * 3.0), rad, z, rings=4, segs=8)
+    return mw
+
+
+WAR_BUILDERS = {
+    "rubble_a": lambda n: make_rubble(n, 1), "rubble_b": lambda n: make_rubble(n, 2, 3.0, 22), "rubble_c": lambda n: make_rubble(n, 3, 1.6, 10),
+    "sandbags": make_sandbags, "hedgehog": make_hedgehog, "jersey": make_jersey, "burnt_car": make_burnt_car,
+    "crater": make_crater, "smoke_column": make_smoke_column,
+}
+WAR_FOOTPRINT = {"rubble": (4.4, 4.4), "sandbags": (3.2, 1.0), "hedgehog": (2.0, 2.0), "jersey": (3.0, 0.7),
+                 "burnt_car": (4.4, 1.9), "crater": (0.1, 0.1), "smoke_column": (2.0, 2.0)}
+for name, fn in WAR_BUILDERS.items():
+    meshes[name] = fn(name).write()
+
+
+def footprint_ring(at, rot, sx, sy):
+    return [(at[0] + rot2(c, rot)[0], at[1] + rot2(c, rot)[1]) for c in [(-sx / 2, -sy / 2), (sx / 2, -sy / 2), (sx / 2, sy / 2), (-sx / 2, sy / 2)]]
+
+
+_SITE_BOXES = [(tuple(layout["site" + k]["center"]), tuple(layout["site" + k]["half"])) for k in ("A", "B")]
+_SPAWNS = [(tuple(layout[k]["center"]), layout[k]["radius"]) for k in ("spawnT", "spawnCT")]
+
+
+def spot_ok(at, rot, sx, sy, keep_lane, allow_sites=False):
+    """A footprint is fine when its corners, centre and mid-edges are outside every building, outside the bomb sites,
+    clear of the spawns, and (keep_lane) leave at least 3 m of carriageway beside the nearest road axis."""
+    ring = footprint_ring(at, rot, sx + 1.0, sy + 1.0)
+    samples = ring + [at] + [((ring[i][0] + ring[(i + 1) % 4][0]) / 2, (ring[i][1] + ring[(i + 1) % 4][1]) / 2) for i in range(4)]
+    if any(inside_any_building(c) for c in samples):
+        return False
+    for c, h in _SITE_BOXES:
+        if not allow_sites and any(abs(q[0] - c[0]) <= h[0] + 1 and abs(q[1] - c[1]) <= h[1] + 1 for q in samples):
+            return False
+    for c, r in _SPAWNS:
+        if any(v_len(v_sub(q, c)) < r + 4 for q in samples):
+            return False
+    if keep_lane:
+        d, hw = nearest_road(at)
+        if hw is not None and d < min(sx, sy) / 2 + 3.0:
+            return False
+    return True
+
+
+def snap_spot(at, rot, sx, sy, keep_lane=True, max_r=16.0, step=2.0, allow_sites=False):
+    """The nearest free spot to the designer's intent (spiral search), or None."""
+    cands = [(0.0, 0.0)]
+    n = int(max_r / step)
+    for i in range(-n, n + 1):
+        for j in range(-n, n + 1):
+            if (i, j) != (0, 0) and math.hypot(i * step, j * step) <= max_r:
+                cands.append((i * step, j * step))
+    cands.sort(key=lambda d: math.hypot(*d))
+    for dx, dy in cands:
+        q = (at[0] + dx, at[1] + dy)
+        if spot_ok(q, rot, sx, sy, keep_lane, allow_sites):
+            return q
+    return None
+
+
+# user-supplied model pieces (assets/models/<pack>/pieces.json, exported by tools/import_blender_assets.py)
+MODEL_PIECES = {}
+for pj in (ROOT / "assets" / "models").glob("*/pieces.json"):
+    pack = pj.parent.name
+    for key, info in json.loads(pj.read_text(encoding="utf-8"))["pieces"].items():
+        MODEL_PIECES[f"{pack}/{key}"] = info
+n_models = 0
+for i, m in enumerate(WAR.get("models", [])):
+    at = tuple(m["at"]); rot = m.get("rot", 0.0)
+    info = MODEL_PIECES.get(m["model"])
+    if info is None:
+        print(f"  WARN model {m['model']} not exported (run tools/import_blender_assets.py) – skipped")
+        continue
+    sx, sy = info["size"][0], info["size"][1]
+    spot = snap_spot(at, rot, sx, sy, keep_lane=not m.get("may_block", False))
+    if spot is None:
+        print(f"  WARN model {m['model']} near {at}: no free spot within 16 m – skipped")
+        continue
+    moved = v_len(v_sub(spot, at))
+    print(f"  model {m['model']:28s} at ({spot[0]:6.1f},{spot[1]:7.1f}) rot {rot:4.0f}  {sx:.1f}x{sy:.1f} m" + (f"  (moved {moved:.1f} m from {at})" if moved > 0.1 else ""))
+    actors.append({"name": f"model_{i}_{m['model'].split('/')[-1]}", "model": m["model"], "loc": ue_loc((spot[0], spot[1], m.get("z", 0.0))),
+                   "yaw": ue_yaw(rot), "tags": ["model", "warzone"]})
+    prop_rings.append(footprint_ring(spot, rot, sx, sy))
+    n_models += 1
+n_war = 0
+for i, pr in enumerate(WAR.get("props", [])):
+    t = pr["type"]; at = tuple(pr["at"]); rot = pr.get("rot", 0.0)
+    sx, sy = WAR_FOOTPRINT[t]
+    spot = at if t == "smoke_column" else snap_spot(at, rot, sx, sy, keep_lane=False, max_r=14.0, allow_sites=True)
+    if spot is None:
+        print(f"  WARN war prop {t} near {at}: no free spot – skipped")
+        continue
+    mesh = t
+    if t == "rubble":
+        mesh = rng.choice(["rubble_a", "rubble_b", "rubble_c"])
+    actors.append({"name": f"war_{t}_{i}", "mesh": mesh, "loc": ue_loc((spot[0], spot[1], pr.get("z", 0.0))), "yaw": ue_yaw(rot), "tags": ["prop", "warzone", t]})
+    if t not in ("crater",):
+        prop_rings.append(footprint_ring(spot, rot, sx, sy))
+    n_war += 1
+print(f"war zone: {n_models} model pieces, {n_war} dressing props")
+
 # trees from OSM
 n_trees = 0
 for t in osm["trees"]:
@@ -1091,7 +1279,8 @@ level = {
     "home": {"label": home["label"], "loc": ue_loc((home["center"][0], home["center"][1], 0.0))},
     "nav_bounds": nav_bounds,
     "zone_bbox_cm": [ZX0 * 100, -ZY1 * 100, ZX1 * 100, -ZY0 * 100],
-    "sun": {"yaw": 35, "pitch": -48},
+    "sun": {"yaw": WAR.get("mood", {}).get("sun_yaw", 35), "pitch": WAR.get("mood", {}).get("sun_pitch", -48)},
+    "mood": WAR.get("mood"),
 }
 (MAP / "level.json").write_text(json.dumps(level, indent=1), encoding="utf-8")
 for old in MESH_DIR.glob("*.obj"):                 # meshes that no longer exist
@@ -1104,7 +1293,7 @@ for old in MESH_DIR.glob("*.obj"):                 # meshes that no longer exist
 total_tris = sum(m["tris"] for m in meshes.values())
 print(f"photo facades: {n_photo_bld} buildings, {n_photo_walls_counter[0]} walls (assets/facades)")
 print(f"buildings: {n_detail} detail + {n_backdrop} backdrop; road chunks {len(road_chunks)}; sidewalk chunks {len(side_chunks)}; greens {gi}")
-print(f"trees {n_trees}; props {len(prop_rings)}; cut-off barriers {len(cut_barriers)}; blockers {len(blockers)}")
+print(f"trees {n_trees}; props + war footprints {len(prop_rings)}; cut-off barriers {len(cut_barriers)}; blockers {len(blockers)}")
 print(f"meshes {len(meshes)} ({total_tris} triangles); actors {len(actors)}; player starts {len(player_starts)}; sites {len(bomb_sites)}")
 
 # ======================================================================= preview image

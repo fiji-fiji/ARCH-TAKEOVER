@@ -66,6 +66,7 @@ public:
 	float BlindUntil = -100.f;            // flashed until (seconds); HUD whites out, bots see nothing
 	float BlindDuration = 1.f;
 	bool bHadBomb = false;                // picked the bomb up this round (bomb hand-off rules)
+	bool bFenceExempt = false;            // dev: teleported for a screenshot, skip the spawn fence
 	FString LastHitWeapon;                // for the kill feed
 	bool bLastHitHeadshot = false;
 

@@ -1,0 +1,77 @@
+{
+ "source": "3 Piece Parisian Apartment Building (user-supplied Blender pack)",
+ "pieces": {
+  "block_center": {
+   "fbx": "block_center.fbx",
+   "size": [
+    10.24,
+    10.99,
+    19.16
+   ],
+   "polys": 41395
+  },
+  "ruin_center": {
+   "fbx": "ruin_center.fbx",
+   "size": [
+    10.24,
+    10.99,
+    15.9
+   ],
+   "polys": 30750
+  },
+  "block_end": {
+   "fbx": "block_end.fbx",
+   "size": [
+    10.24,
+    6.95,
+    19.19
+   ],
+   "polys": 33715
+  },
+  "ruin_end": {
+   "fbx": "ruin_end.fbx",
+   "size": [
+    10.24,
+    6.95,
+    14.98
+   ],
+   "polys": 26018
+  },
+  "block_corner": {
+   "fbx": "block_corner.fbx",
+   "size": [
+    17.8,
+    14.28,
+    19.23
+   ],
+   "polys": 64759
+  },
+  "ruin_corner": {
+   "fbx": "ruin_corner.fbx",
+   "size": [
+    17.8,
+    14.28,
+    18.31
+   ],
+   "polys": 47510
+  },
+  "wall_chunk_a": {
+   "fbx": "wall_chunk_a.fbx",
+   "size": [
+    10.24,
+    1.32,
+    13.47
+   ],
+   "polys": 2521
+  },
+  "wall_chunk_b": {
+   "fbx": "wall_chunk_b.fbx",
+   "size": [
+    10.24,
+    1.76,
+    11.03
+   ],
+   "polys": 1789
+  }
+ }
+}

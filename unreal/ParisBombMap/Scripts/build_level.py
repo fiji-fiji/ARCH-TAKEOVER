@@ -311,6 +311,92 @@ for k, (mesh_id, info) in enumerate(LEVEL["meshes"].items()):
         log(f"meshes {k}/{total}")
 log(f"meshes imported: {len(meshes)}/{total} in {time.time() - t_import:.0f}s")
 
+# ====================================================================== user-supplied models (FBX with textures -> /Game/Models/<pack>)
+FBX_PIPE_PATH = "/Game/Pipelines/FbxPipeline"
+MODELS_DIR = os.path.join(ROOT, "assets", "models")
+models = {}
+
+
+def make_fbx_pipeline():
+    if eal.does_asset_exist(FBX_PIPE_PATH):
+        pipe = unreal.load_asset(FBX_PIPE_PATH)
+    else:
+        src = unreal.load_asset("/Interchange/Pipelines/DefaultAssetsPipeline")
+        pipe = asset_tools.duplicate_asset("FbxPipeline", "/Game/Pipelines", src)
+    mp = pipe.get_editor_property("mesh_pipeline")
+    mp.set_editor_property("collision", False)
+    mp.set_editor_property("combine_static_meshes_behavior", unreal.InterchangeCombineStaticMeshesBehavior.ALL)
+    for prop in ("generate_lightmap_u_vs", "generate_lightmap_uvs"):
+        try:
+            mp.set_editor_property(prop, False); break
+        except Exception:
+            pass
+    try:
+        mp.set_editor_property("build_nanite", False)
+    except Exception:
+        pass
+    matp = pipe.get_editor_property("material_pipeline")
+    matp.set_editor_property("import_materials", True)
+    try:
+        matp.get_editor_property("texture_pipeline").set_editor_property("import_textures", True)
+    except Exception as e:
+        warn(f"fbx texture pipeline option: {e}")
+    cm = pipe.get_editor_property("common_meshes_properties")
+    cm.set_editor_property("force_all_mesh_as_type", unreal.InterchangeForceMeshType.IFMT_STATIC_MESH)
+    pipe.set_editor_property("use_source_name_for_asset", True)
+    eal.save_asset(FBX_PIPE_PATH)
+    return pipe
+
+
+def import_model(pack, key, fbx_file):
+    pkg = f"/Game/Models/{pack}"
+    path = f"{pkg}/{key}"
+    if not stale(path, fbx_file):
+        return unreal.load_asset(path)
+    source = unreal.InterchangeManager.create_source_data(fbx_file)
+    params = unreal.ImportAssetParameters()
+    params.set_editor_property("is_automated", True)
+    params.set_editor_property("replace_existing", True)
+    params.set_editor_property("override_pipelines", [unreal.SoftObjectPath(fbx_pipeline.get_path_name())])
+    result = manager.import_asset(pkg, source, params)
+    imported = None
+    if isinstance(result, tuple):
+        for o in result[1]:
+            if isinstance(o, unreal.StaticMesh):
+                imported = o
+    if imported is None and eal.does_asset_exist(path):
+        imported = unreal.load_asset(path)
+    if imported is None:
+        raise RuntimeError(f"model import failed: {fbx_file}")
+    if imported.get_path_name().split(".")[0] != path:
+        eal.rename_asset(imported.get_path_name().split(".")[0], path)
+        imported = unreal.load_asset(path)
+    unreal.MapBuilderLibrary.set_complex_collision(imported)
+    eal.save_directory(pkg, only_if_is_dirty=True, recursive=True)
+    return imported
+
+
+if os.path.isdir(MODELS_DIR):
+    fbx_pipeline = None
+    for pack in sorted(os.listdir(MODELS_DIR)):
+        pj = os.path.join(MODELS_DIR, pack, "pieces.json")
+        if not os.path.isfile(pj):
+            continue
+        with open(pj, "r", encoding="utf-8") as f:
+            pieces = json.load(f)["pieces"]
+        for key, info in pieces.items():
+            try:
+                if fbx_pipeline is None:
+                    fbx_pipeline = make_fbx_pipeline()
+                t0 = time.time()
+                was_new = stale(f"/Game/Models/{pack}/{key}", os.path.join(MODELS_DIR, pack, info["fbx"]))
+                models[f"{pack}/{key}"] = import_model(pack, key, os.path.join(MODELS_DIR, pack, info["fbx"]))
+                if was_new:
+                    log(f"model {pack}/{key} imported in {time.time() - t0:.0f}s")
+            except Exception as e:
+                warn(f"model {pack}/{key}: {e}\n{traceback.format_exc()}")
+log(f"models: {len(models)}")
+
 # ====================================================================== level
 les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
 eas = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
@@ -361,8 +447,10 @@ def spawn_mesh_actor(mesh, loc, rot):
 
 
 for a in LEVEL["actors"]:
-    mesh = meshes.get(a["mesh"])
+    mesh = models.get(a["model"]) if "model" in a else meshes.get(a.get("mesh"))
     if mesh is None:
+        if "model" in a:
+            warn(f"model {a['model']} missing for {a['name']}")
         continue
     actor = spawn_mesh_actor(mesh, vec(a["loc"]), rot_yaw(a["yaw"]))
     if actor is None:
@@ -432,9 +520,11 @@ sun = spawn_class(unreal.DirectionalLight, unreal.Vector(0, 0, 5000), unreal.Rot
 sun.set_actor_label("Sun")
 sc = sun.get_component_by_class(unreal.DirectionalLightComponent)
 sc.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
-sc.set_intensity(7.0)
+MOOD = LEVEL.get("mood") or {}
+sc.set_intensity(float(MOOD.get("sun_intensity", 7.0)))
 sc.set_editor_property("atmosphere_sun_light", True)
-sc.set_editor_property("light_color", unreal.Color(255, 244, 224, 255))
+_sun_col = MOOD.get("sun_color", [255, 244, 224])
+sc.set_editor_property("light_color", unreal.Color(int(_sun_col[0]), int(_sun_col[1]), int(_sun_col[2]), 255))
 try:
     sc.set_editor_property("dynamic_shadow_distance_movable_light", 25000.0)
     sc.set_editor_property("cascade_distribution_exponent", 2.5)
@@ -447,13 +537,20 @@ skylight.set_actor_label("SkyLight")
 slc = skylight.get_component_by_class(unreal.SkyLightComponent)
 slc.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
 slc.set_editor_property("real_time_capture", True)
-slc.set_intensity(1.0)
+slc.set_intensity(float(MOOD.get("skylight", 1.0)))
 fog = spawn_class(unreal.ExponentialHeightFog, unreal.Vector(0, 0, 0), rot_yaw(0))
 fog.set_actor_label("Fog")
 fc = fog.get_component_by_class(unreal.ExponentialHeightFogComponent)
-fc.set_editor_property("fog_density", 0.012)
-fc.set_editor_property("fog_height_falloff", 0.35)
-fc.set_editor_property("start_distance", 3000.0)
+fc.set_editor_property("fog_density", float(MOOD.get("fog_density", 0.012)))
+fc.set_editor_property("fog_height_falloff", float(MOOD.get("fog_falloff", 0.35)))
+fc.set_editor_property("start_distance", float(MOOD.get("fog_start", 3000.0)))
+if MOOD.get("fog_color"):
+    _fcol = MOOD["fog_color"]
+    for prop in ("fog_inscattering_luminance", "fog_inscattering_color"):
+        try:
+            fc.set_editor_property(prop, unreal.LinearColor(_fcol[0], _fcol[1], _fcol[2], 1.0)); break
+        except Exception:
+            pass
 try:
     clouds = spawn_class(unreal.VolumetricCloud, unreal.Vector(0, 0, 0), rot_yaw(0))
     clouds.set_actor_label("Clouds")
@@ -468,6 +565,14 @@ try:
     settings.set_editor_property("auto_exposure_min_brightness", 0.6)
     settings.set_editor_property("override_auto_exposure_max_brightness", True)
     settings.set_editor_property("auto_exposure_max_brightness", 2.5)
+    if MOOD.get("saturation") is not None:
+        settings.set_editor_property("override_color_saturation", True)
+        _sat = float(MOOD["saturation"])
+        settings.set_editor_property("color_saturation", unreal.Vector4(_sat, _sat, _sat, 1.0))
+    if MOOD.get("contrast") is not None:
+        settings.set_editor_property("override_color_contrast", True)
+        _con = float(MOOD["contrast"])
+        settings.set_editor_property("color_contrast", unreal.Vector4(_con, _con, _con, 1.0))
     pp.set_editor_property("settings", settings)
 except Exception as e:
     warn(f"post process: {e}")

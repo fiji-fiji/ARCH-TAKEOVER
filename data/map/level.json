@@ -1227,6 +1227,68 @@
     0.7
    ],
    "roughness": 1.0
+  },
+  "M_Sandbag": {
+   "color": [
+    0.58,
+    0.52,
+    0.38
+   ],
+   "roughness": 1.0
+  },
+  "M_Rust": {
+   "color": [
+    0.3,
+    0.17,
+    0.1
+   ],
+   "roughness": 0.85,
+   "metallic": 0.3
+  },
+  "M_Burnt": {
+   "color": [
+    0.07,
+    0.065,
+    0.06
+   ],
+   "roughness": 0.95
+  },
+  "M_Scorch": {
+   "color": [
+    0.05,
+    0.045,
+    0.04
+   ],
+   "roughness": 1.0
+  },
+  "M_BrickRed": {
+   "color": [
+    0.48,
+    0.26,
+    0.2
+   ],
+   "roughness": 0.95
+  },
+  "M_SmokeDark": {
+   "color": [
+    0.22,
+    0.21,
+    0.2
+   ],
+   "roughness": 1.0
+  },
+  "M_Fire": {
+   "color": [
+    1.0,
+    0.45,
+    0.1
+   ],
+   "roughness": 0.9,
+   "emissive": [
+    6.0,
+    1.6,
+    0.2
+   ]
   }
  },
  "meshes": {
@@ -7425,6 +7487,90 @@
     "M_Container"
    ],
    "tris": 108
+  },
+  "rubble_a": {
+   "file": "meshes/rubble_a.obj",
+   "slots": [
+    "M_Soil",
+    "M_Concrete",
+    "M_BrickRed",
+    "M_Stone",
+    "M_Wood"
+   ],
+   "tris": 240
+  },
+  "rubble_b": {
+   "file": "meshes/rubble_b.obj",
+   "slots": [
+    "M_Soil",
+    "M_BrickRed",
+    "M_Stone",
+    "M_Concrete",
+    "M_Rust",
+    "M_Wood"
+   ],
+   "tris": 312
+  },
+  "rubble_c": {
+   "file": "meshes/rubble_c.obj",
+   "slots": [
+    "M_Soil",
+    "M_Concrete",
+    "M_BrickRed",
+    "M_Stone",
+    "M_Rust",
+    "M_Wood"
+   ],
+   "tris": 168
+  },
+  "sandbags": {
+   "file": "meshes/sandbags.obj",
+   "slots": [
+    "M_Sandbag"
+   ],
+   "tris": 144
+  },
+  "hedgehog": {
+   "file": "meshes/hedgehog.obj",
+   "slots": [
+    "M_Rust"
+   ],
+   "tris": 36
+  },
+  "jersey": {
+   "file": "meshes/jersey.obj",
+   "slots": [
+    "M_Concrete"
+   ],
+   "tris": 36
+  },
+  "burnt_car": {
+   "file": "meshes/burnt_car.obj",
+   "slots": [
+    "M_Burnt",
+    "M_Rust",
+    "M_Tyre",
+    "M_Scorch"
+   ],
+   "tris": 96
+  },
+  "crater": {
+   "file": "meshes/crater.obj",
+   "slots": [
+    "M_Scorch",
+    "M_Concrete",
+    "M_Asphalt",
+    "M_Soil"
+   ],
+   "tris": 156
+  },
+  "smoke_column": {
+   "file": "meshes/smoke_column.obj",
+   "slots": [
+    "M_Fire",
+    "M_SmokeDark"
+   ],
+   "tris": 444
   }
  },
  "actors": [
@@ -17215,6 +17361,899 @@
    ]
   },
   {
+   "name": "model_0_ruin_center",
+   "model": "parisian_block/ruin_center",
+   "loc": [
+    -12200.0,
+    12000.0,
+    0.0
+   ],
+   "yaw": -22,
+   "tags": [
+    "model",
+    "warzone"
+   ]
+  },
+  {
+   "name": "model_1_wall_chunk_a",
+   "model": "parisian_block/wall_chunk_a",
+   "loc": [
+    -15000.0,
+    16400.0,
+    0.0
+   ],
+   "yaw": -75,
+   "tags": [
+    "model",
+    "warzone"
+   ]
+  },
+  {
+   "name": "model_2_ruin_end",
+   "model": "parisian_block/ruin_end",
+   "loc": [
+    -12800.0,
+    6200.0,
+    0.0
+   ],
+   "yaw": -72,
+   "tags": [
+    "model",
+    "warzone"
+   ]
+  },
+  {
+   "name": "model_3_block_end",
+   "model": "parisian_block/block_end",
+   "loc": [
+    -6200.0,
+    23600.0,
+    0.0
+   ],
+   "yaw": -70,
+   "tags": [
+    "model",
+    "warzone"
+   ]
+  },
+  {
+   "name": "model_4_wall_chunk_b",
+   "model": "parisian_block/wall_chunk_b",
+   "loc": [
+    -2600.0,
+    7800.0,
+    0.0
+   ],
+   "yaw": -255,
+   "tags": [
+    "model",
+    "warzone"
+   ]
+  },
+  {
+   "name": "model_5_ruin_corner",
+   "model": "parisian_block/ruin_corner",
+   "loc": [
+    -16000.0,
+    18000.0,
+    0.0
+   ],
+   "yaw": -70,
+   "tags": [
+    "model",
+    "warzone"
+   ]
+  },
+  {
+   "name": "model_6_wall_chunk_a",
+   "model": "parisian_block/wall_chunk_a",
+   "loc": [
+    4800.0,
+    4900.0,
+    0.0
+   ],
+   "yaw": 11,
+   "tags": [
+    "model",
+    "warzone"
+   ]
+  },
+  {
+   "name": "war_rubble_0",
+   "mesh": "rubble_a",
+   "loc": [
+    -9200.0,
+    10800.0,
+    0.0
+   ],
+   "yaw": -10,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_rubble_1",
+   "mesh": "rubble_b",
+   "loc": [
+    -10800.0,
+    12200.0,
+    0.0
+   ],
+   "yaw": -70,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_sandbags_2",
+   "mesh": "sandbags",
+   "loc": [
+    -8600.0,
+    13000.0,
+    0.0
+   ],
+   "yaw": -20,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_sandbags_3",
+   "mesh": "sandbags",
+   "loc": [
+    -7800.0,
+    11800.0,
+    0.0
+   ],
+   "yaw": -110,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_crater_4",
+   "mesh": "crater",
+   "loc": [
+    -7200.0,
+    12600.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "crater"
+   ]
+  },
+  {
+   "name": "war_smoke_column_5",
+   "mesh": "smoke_column",
+   "loc": [
+    -10400,
+    11000,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "smoke_column"
+   ]
+  },
+  {
+   "name": "war_rubble_6",
+   "mesh": "rubble_c",
+   "loc": [
+    -12600.0,
+    15000.0,
+    0.0
+   ],
+   "yaw": 0,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_rubble_7",
+   "mesh": "rubble_b",
+   "loc": [
+    -15200.0,
+    17000.0,
+    0.0
+   ],
+   "yaw": -40,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_burnt_car_8",
+   "mesh": "burnt_car",
+   "loc": [
+    -12600.0,
+    14000.0,
+    0.0
+   ],
+   "yaw": -75,
+   "tags": [
+    "prop",
+    "warzone",
+    "burnt_car"
+   ]
+  },
+  {
+   "name": "war_jersey_9",
+   "mesh": "jersey",
+   "loc": [
+    -12000.0,
+    10000.0,
+    0.0
+   ],
+   "yaw": -68,
+   "tags": [
+    "prop",
+    "warzone",
+    "jersey"
+   ]
+  },
+  {
+   "name": "war_jersey_10",
+   "mesh": "jersey",
+   "loc": [
+    -12400.0,
+    10300.0,
+    0.0
+   ],
+   "yaw": -68,
+   "tags": [
+    "prop",
+    "warzone",
+    "jersey"
+   ]
+  },
+  {
+   "name": "war_crater_11",
+   "mesh": "crater",
+   "loc": [
+    -13200.0,
+    12000.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "crater"
+   ]
+  },
+  {
+   "name": "war_rubble_12",
+   "mesh": "rubble_a",
+   "loc": [
+    -11600.0,
+    7200.0,
+    0.0
+   ],
+   "yaw": -20,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_burnt_car_13",
+   "mesh": "burnt_car",
+   "loc": [
+    -11000.0,
+    4800.0,
+    0.0
+   ],
+   "yaw": -70,
+   "tags": [
+    "prop",
+    "warzone",
+    "burnt_car"
+   ]
+  },
+  {
+   "name": "war_hedgehog_14",
+   "mesh": "hedgehog",
+   "loc": [
+    -10400.0,
+    3400.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "hedgehog"
+   ]
+  },
+  {
+   "name": "war_hedgehog_15",
+   "mesh": "hedgehog",
+   "loc": [
+    -11200.0,
+    3800.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "hedgehog"
+   ]
+  },
+  {
+   "name": "war_crater_16",
+   "mesh": "crater",
+   "loc": [
+    -9800.0,
+    2000.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "crater"
+   ]
+  },
+  {
+   "name": "war_sandbags_17",
+   "mesh": "sandbags",
+   "loc": [
+    -6800.0,
+    25000.0,
+    0.0
+   ],
+   "yaw": -160,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_sandbags_18",
+   "mesh": "sandbags",
+   "loc": [
+    -8800.0,
+    24400.0,
+    0.0
+   ],
+   "yaw": -70,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_jersey_19",
+   "mesh": "jersey",
+   "loc": [
+    -9800.0,
+    27200.0,
+    0.0
+   ],
+   "yaw": -70,
+   "tags": [
+    "prop",
+    "warzone",
+    "jersey"
+   ]
+  },
+  {
+   "name": "war_rubble_20",
+   "mesh": "rubble_a",
+   "loc": [
+    -5200.0,
+    24200.0,
+    0.0
+   ],
+   "yaw": 0,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_burnt_car_21",
+   "mesh": "burnt_car",
+   "loc": [
+    -4000.0,
+    27200.0,
+    0.0
+   ],
+   "yaw": 18,
+   "tags": [
+    "prop",
+    "warzone",
+    "burnt_car"
+   ]
+  },
+  {
+   "name": "war_rubble_22",
+   "mesh": "rubble_c",
+   "loc": [
+    -2000.0,
+    8400.0,
+    0.0
+   ],
+   "yaw": 0,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_sandbags_23",
+   "mesh": "sandbags",
+   "loc": [
+    -1200.0,
+    5800.0,
+    0.0
+   ],
+   "yaw": -165,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_crater_24",
+   "mesh": "crater",
+   "loc": [
+    -3000.0,
+    10200.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "crater"
+   ]
+  },
+  {
+   "name": "war_burnt_car_25",
+   "mesh": "burnt_car",
+   "loc": [
+    -4400.0,
+    12800.0,
+    0.0
+   ],
+   "yaw": -248,
+   "tags": [
+    "prop",
+    "warzone",
+    "burnt_car"
+   ]
+  },
+  {
+   "name": "war_rubble_26",
+   "mesh": "rubble_b",
+   "loc": [
+    -4800.0,
+    14000.0,
+    0.0
+   ],
+   "yaw": -30,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_rubble_27",
+   "mesh": "rubble_b",
+   "loc": [
+    6800.0,
+    5600.0,
+    0.0
+   ],
+   "yaw": 0,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_sandbags_28",
+   "mesh": "sandbags",
+   "loc": [
+    9000.0,
+    5800.0,
+    0.0
+   ],
+   "yaw": -80,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_sandbags_29",
+   "mesh": "sandbags",
+   "loc": [
+    7600.0,
+    6000.0,
+    0.0
+   ],
+   "yaw": 10,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_crater_30",
+   "mesh": "crater",
+   "loc": [
+    4000.0,
+    5000.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "crater"
+   ]
+  },
+  {
+   "name": "war_burnt_car_31",
+   "mesh": "burnt_car",
+   "loc": [
+    9000.0,
+    20800.0,
+    0.0
+   ],
+   "yaw": -67,
+   "tags": [
+    "prop",
+    "warzone",
+    "burnt_car"
+   ]
+  },
+  {
+   "name": "war_hedgehog_32",
+   "mesh": "hedgehog",
+   "loc": [
+    8600.0,
+    12000.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "hedgehog"
+   ]
+  },
+  {
+   "name": "war_hedgehog_33",
+   "mesh": "hedgehog",
+   "loc": [
+    9200.0,
+    11600.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "hedgehog"
+   ]
+  },
+  {
+   "name": "war_jersey_34",
+   "mesh": "jersey",
+   "loc": [
+    1400.0,
+    -3000.0,
+    0.0
+   ],
+   "yaw": -70,
+   "tags": [
+    "prop",
+    "warzone",
+    "jersey"
+   ]
+  },
+  {
+   "name": "war_sandbags_35",
+   "mesh": "sandbags",
+   "loc": [
+    2000.0,
+    -0.0,
+    0.0
+   ],
+   "yaw": -250,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_crater_36",
+   "mesh": "crater",
+   "loc": [
+    -6200.0,
+    20000.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "crater"
+   ]
+  },
+  {
+   "name": "war_rubble_37",
+   "mesh": "rubble_b",
+   "loc": [
+    -16600.0,
+    21000.0,
+    0.0
+   ],
+   "yaw": -50,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_rubble_38",
+   "mesh": "rubble_a",
+   "loc": [
+    -14400.0,
+    23400.0,
+    0.0
+   ],
+   "yaw": 0,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_smoke_column_39",
+   "mesh": "smoke_column",
+   "loc": [
+    -17000,
+    30000,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "smoke_column"
+   ]
+  },
+  {
+   "name": "war_smoke_column_40",
+   "mesh": "smoke_column",
+   "loc": [
+    15000,
+    -7000,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "smoke_column"
+   ]
+  },
+  {
+   "name": "war_smoke_column_41",
+   "mesh": "smoke_column",
+   "loc": [
+    -20000,
+    -9000,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "smoke_column"
+   ]
+  },
+  {
+   "name": "war_smoke_column_42",
+   "mesh": "smoke_column",
+   "loc": [
+    14000,
+    30000,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "smoke_column"
+   ]
+  },
+  {
+   "name": "war_hedgehog_43",
+   "mesh": "hedgehog",
+   "loc": [
+    -16200.0,
+    19000.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "hedgehog"
+   ]
+  },
+  {
+   "name": "war_hedgehog_44",
+   "mesh": "hedgehog",
+   "loc": [
+    -15600.0,
+    18600.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "hedgehog"
+   ]
+  },
+  {
+   "name": "war_hedgehog_45",
+   "mesh": "hedgehog",
+   "loc": [
+    -17000.0,
+    19400.0,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "hedgehog"
+   ]
+  },
+  {
+   "name": "war_rubble_46",
+   "mesh": "rubble_a",
+   "loc": [
+    -13000.0,
+    11200.0,
+    0.0
+   ],
+   "yaw": -15,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_sandbags_47",
+   "mesh": "sandbags",
+   "loc": [
+    -7000.0,
+    10400.0,
+    0.0
+   ],
+   "yaw": -20,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_sandbags_48",
+   "mesh": "sandbags",
+   "loc": [
+    -6000.0,
+    11800.0,
+    0.0
+   ],
+   "yaw": -110,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_rubble_49",
+   "mesh": "rubble_b",
+   "loc": [
+    5000.0,
+    5200.0,
+    0.0
+   ],
+   "yaw": 0,
+   "tags": [
+    "prop",
+    "warzone",
+    "rubble"
+   ]
+  },
+  {
+   "name": "war_sandbags_50",
+   "mesh": "sandbags",
+   "loc": [
+    7200.0,
+    5800.0,
+    0.0
+   ],
+   "yaw": 10,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_sandbags_51",
+   "mesh": "sandbags",
+   "loc": [
+    9400.0,
+    6000.0,
+    0.0
+   ],
+   "yaw": -80,
+   "tags": [
+    "prop",
+    "warzone",
+    "sandbags"
+   ]
+  },
+  {
+   "name": "war_smoke_column_52",
+   "mesh": "smoke_column",
+   "loc": [
+    -16600,
+    17600,
+    0.0
+   ],
+   "yaw": -0.0,
+   "tags": [
+    "prop",
+    "warzone",
+    "smoke_column"
+   ]
+  },
+  {
    "name": "tree_0",
    "mesh": "tree_a",
    "loc": [
@@ -17222,7 +18261,7 @@
     -2188.2,
     12.0
    ],
-   "yaw": -161.72,
+   "yaw": -33.39,
    "tags": [
     "tree"
    ]
@@ -17235,7 +18274,7 @@
     -2521.6,
     12.0
    ],
-   "yaw": -291.39,
+   "yaw": -129.23,
    "tags": [
     "tree"
    ]
@@ -17248,7 +18287,7 @@
     -2621.6,
     12.0
    ],
-   "yaw": -273.17,
+   "yaw": -217.34,
    "tags": [
     "tree"
    ]
@@ -17261,20 +18300,20 @@
     -2821.6,
     12.0
    ],
-   "yaw": -251.33,
+   "yaw": -262.7,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_4",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     20375.0,
     -2955.0,
     12.0
    ],
-   "yaw": -100.03,
+   "yaw": -44.94,
    "tags": [
     "tree"
    ]
@@ -17287,7 +18326,7 @@
     -3432.9,
     12.0
    ],
-   "yaw": -344.6,
+   "yaw": -28.37,
    "tags": [
     "tree"
    ]
@@ -17300,20 +18339,20 @@
     -3566.2,
     12.0
    ],
-   "yaw": -36.8,
+   "yaw": -298.59,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_7",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     17094.5,
     -3655.1,
     12.0
    ],
-   "yaw": -34.82,
+   "yaw": -318.76,
    "tags": [
     "tree"
    ]
@@ -17326,20 +18365,20 @@
     -4121.9,
     12.0
    ],
-   "yaw": -217.34,
+   "yaw": -207.85,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_9",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     22850.0,
     -4210.8,
     12.0
    ],
-   "yaw": -262.7,
+   "yaw": -25.04,
    "tags": [
     "tree"
    ]
@@ -17352,7 +18391,7 @@
     -4333.0,
     12.0
    ],
-   "yaw": -44.94,
+   "yaw": -82.04,
    "tags": [
     "tree"
    ]
@@ -17365,7 +18404,7 @@
     -4333.0,
     12.0
    ],
-   "yaw": -28.37,
+   "yaw": -354.68,
    "tags": [
     "tree"
    ]
@@ -17378,98 +18417,98 @@
     -4744.2,
     12.0
    ],
-   "yaw": -298.59,
-   "tags": [
-    "tree"
-   ]
-  },
-  {
-   "name": "tree_13",
-   "mesh": "tree_b",
-   "loc": [
-    20294.4,
-    -4822.0,
-    12.0
-   ],
-   "yaw": -318.76,
-   "tags": [
-    "tree"
-   ]
-  },
-  {
-   "name": "tree_14",
-   "mesh": "tree_a",
-   "loc": [
-    11778.3,
-    -4866.5,
-    12.0
-   ],
-   "yaw": -207.85,
-   "tags": [
-    "tree"
-   ]
-  },
-  {
-   "name": "tree_15",
-   "mesh": "tree_b",
-   "loc": [
-    11302.3,
-    -4944.3,
-    12.0
-   ],
-   "yaw": -25.04,
-   "tags": [
-    "tree"
-   ]
-  },
-  {
-   "name": "tree_16",
-   "mesh": "tree_b",
-   "loc": [
-    10723.9,
-    -5066.5,
-    12.0
-   ],
-   "yaw": -82.04,
-   "tags": [
-    "tree"
-   ]
-  },
-  {
-   "name": "tree_17",
-   "mesh": "tree_a",
-   "loc": [
-    19115.5,
-    -5077.6,
-    12.0
-   ],
-   "yaw": -354.68,
-   "tags": [
-    "tree"
-   ]
-  },
-  {
-   "name": "tree_18",
-   "mesh": "tree_a",
-   "loc": [
-    10211.3,
-    -5188.8,
-    12.0
-   ],
    "yaw": -311.93,
    "tags": [
     "tree"
    ]
   },
   {
-   "name": "tree_19",
+   "name": "tree_13",
    "mesh": "tree_a",
+   "loc": [
+    20294.4,
+    -4822.0,
+    12.0
+   ],
+   "yaw": -100.07,
+   "tags": [
+    "tree"
+   ]
+  },
+  {
+   "name": "tree_14",
+   "mesh": "tree_b",
+   "loc": [
+    11778.3,
+    -4866.5,
+    12.0
+   ],
+   "yaw": -300.28,
+   "tags": [
+    "tree"
+   ]
+  },
+  {
+   "name": "tree_15",
+   "mesh": "tree_a",
+   "loc": [
+    11302.3,
+    -4944.3,
+    12.0
+   ],
+   "yaw": -133.27,
+   "tags": [
+    "tree"
+   ]
+  },
+  {
+   "name": "tree_16",
+   "mesh": "tree_a",
+   "loc": [
+    10723.9,
+    -5066.5,
+    12.0
+   ],
+   "yaw": -241.26,
+   "tags": [
+    "tree"
+   ]
+  },
+  {
+   "name": "tree_17",
+   "mesh": "tree_b",
+   "loc": [
+    19115.5,
+    -5077.6,
+    12.0
+   ],
+   "yaw": -337.2,
+   "tags": [
+    "tree"
+   ]
+  },
+  {
+   "name": "tree_18",
+   "mesh": "tree_b",
+   "loc": [
+    10211.3,
+    -5188.8,
+    12.0
+   ],
+   "yaw": -25.7,
+   "tags": [
+    "tree"
+   ]
+  },
+  {
+   "name": "tree_19",
+   "mesh": "tree_b",
    "loc": [
     18573.6,
     -5199.9,
     12.0
    ],
-   "yaw": -100.07,
+   "yaw": -61.61,
    "tags": [
     "tree"
    ]
@@ -17482,7 +18521,7 @@
     -5311.0,
     12.0
    ],
-   "yaw": -300.28,
+   "yaw": -88.13,
    "tags": [
     "tree"
    ]
@@ -17495,72 +18534,72 @@
     -5322.1,
     12.0
    ],
-   "yaw": -133.27,
+   "yaw": -136.6,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_22",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     9134.9,
     -5466.6,
     12.0
    ],
-   "yaw": -241.26,
+   "yaw": -247.74,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_23",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     8556.4,
     -5666.6,
     12.0
    ],
-   "yaw": -337.2,
+   "yaw": -246.46,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_24",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     16105.9,
     -5744.4,
     12.0
    ],
-   "yaw": -25.7,
+   "yaw": -82.46,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_25",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     7809.5,
     -5888.9,
     12.0
    ],
-   "yaw": -61.61,
+   "yaw": -289.82,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_26",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     15498.2,
     -5900.0,
     12.0
    ],
-   "yaw": -88.13,
+   "yaw": -96.39,
    "tags": [
     "tree"
    ]
@@ -17573,7 +18612,7 @@
     -6188.9,
     12.0
    ],
-   "yaw": -136.6,
+   "yaw": -328.73,
    "tags": [
     "tree"
    ]
@@ -17586,7 +18625,7 @@
     -6289.0,
     12.0
    ],
-   "yaw": -247.74,
+   "yaw": -315.49,
    "tags": [
     "tree"
    ]
@@ -17599,7 +18638,7 @@
     -6300.1,
     12.0
    ],
-   "yaw": -246.46,
+   "yaw": -76.55,
    "tags": [
     "tree"
    ]
@@ -17612,20 +18651,20 @@
     -6422.3,
     12.0
    ],
-   "yaw": -82.46,
+   "yaw": -142.43,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_31",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     12862.0,
     -6566.8,
     12.0
    ],
-   "yaw": -289.82,
+   "yaw": -165.19,
    "tags": [
     "tree"
    ]
@@ -17638,33 +18677,33 @@
     -6600.1,
     12.0
    ],
-   "yaw": -96.39,
+   "yaw": -50.27,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_33",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     12393.4,
     -6689.0,
     12.0
    ],
-   "yaw": -328.73,
+   "yaw": -202.09,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_34",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     11448.8,
     -6900.2,
     12.0
    ],
-   "yaw": -315.49,
+   "yaw": -268.92,
    "tags": [
     "tree"
    ]
@@ -17677,7 +18716,7 @@
     -6922.4,
     12.0
    ],
-   "yaw": -76.55,
+   "yaw": -323.22,
    "tags": [
     "tree"
    ]
@@ -17690,20 +18729,20 @@
     -7166.9,
     12.0
    ],
-   "yaw": -142.43,
+   "yaw": -130.32,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_37",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     9383.8,
     -7366.9,
     12.0
    ],
-   "yaw": -165.19,
+   "yaw": -183.43,
    "tags": [
     "tree"
    ]
@@ -17716,20 +18755,20 @@
     -7489.2,
     12.0
    ],
-   "yaw": -50.27,
+   "yaw": -272.08,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_39",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     8366.0,
     -7611.4,
     12.0
    ],
-   "yaw": -202.09,
+   "yaw": -55.02,
    "tags": [
     "tree"
    ]
@@ -17742,7 +18781,7 @@
     -7789.2,
     12.0
    ],
-   "yaw": -268.92,
+   "yaw": -285.15,
    "tags": [
     "tree"
    ]
@@ -17755,7 +18794,7 @@
     -7911.5,
     12.0
    ],
-   "yaw": -323.22,
+   "yaw": -214.71,
    "tags": [
     "tree"
    ]
@@ -17768,7 +18807,7 @@
     -8067.1,
     12.0
    ],
-   "yaw": -130.32,
+   "yaw": -137.38,
    "tags": [
     "tree"
    ]
@@ -17781,20 +18820,20 @@
     -8233.8,
     12.0
    ],
-   "yaw": -183.43,
+   "yaw": -190.48,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_44",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     538.2,
     -8411.6,
     12.0
    ],
-   "yaw": -272.08,
+   "yaw": -309.88,
    "tags": [
     "tree"
    ]
@@ -17807,7 +18846,7 @@
     -8567.2,
     12.0
    ],
-   "yaw": -55.02,
+   "yaw": -244.9,
    "tags": [
     "tree"
    ]
@@ -17820,33 +18859,33 @@
     -8722.8,
     12.0
    ],
-   "yaw": -285.15,
+   "yaw": -245.42,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_47",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -823.8,
     -8856.1,
     12.0
    ],
-   "yaw": -214.71,
+   "yaw": -270.32,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_48",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -1336.4,
     -9045.0,
     12.0
    ],
-   "yaw": -137.38,
+   "yaw": -122.46,
    "tags": [
     "tree"
    ]
@@ -17859,33 +18898,33 @@
     -9200.6,
     12.0
    ],
-   "yaw": -190.48,
+   "yaw": -156.52,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_50",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     6769.7,
     -9345.1,
     12.0
    ],
-   "yaw": -309.88,
+   "yaw": -1.17,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_51",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -2302.9,
     -9367.3,
     12.0
    ],
-   "yaw": -244.9,
+   "yaw": -315.31,
    "tags": [
     "tree"
    ]
@@ -17898,33 +18937,33 @@
     -9700.7,
     12.0
    ],
-   "yaw": -245.42,
+   "yaw": -349.88,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_53",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -4697.4,
     -10178.6,
     12.0
    ],
-   "yaw": -270.32,
+   "yaw": -182.77,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_54",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     230.7,
     -10412.0,
     12.0
    ],
-   "yaw": -122.46,
+   "yaw": -313.39,
    "tags": [
     "tree"
    ]
@@ -17937,33 +18976,33 @@
     -10778.7,
     12.0
    ],
-   "yaw": -156.52,
+   "yaw": -303.0,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_56",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -919.0,
     -10812.0,
     12.0
    ],
-   "yaw": -1.17,
+   "yaw": -219.23,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_57",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -1424.2,
     -10989.8,
     12.0
    ],
-   "yaw": -315.31,
+   "yaw": -134.61,
    "tags": [
     "tree"
    ]
@@ -17976,33 +19015,33 @@
     -11145.4,
     12.0
    ],
-   "yaw": -349.88,
+   "yaw": -194.18,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_59",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11090.0,
     -12367.9,
     12.0
    ],
-   "yaw": -182.77,
+   "yaw": -330.66,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_60",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11910.1,
     -12645.7,
     12.0
    ],
-   "yaw": -313.39,
+   "yaw": -116.7,
    "tags": [
     "tree"
    ]
@@ -18015,20 +19054,20 @@
     -12934.7,
     12.0
    ],
-   "yaw": -303.0,
+   "yaw": -40.27,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_62",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -12869.4,
     -12956.9,
     12.0
    ],
-   "yaw": -219.23,
+   "yaw": -316.34,
    "tags": [
     "tree"
    ]
@@ -18041,7 +19080,7 @@
     -13279.2,
     12.0
    ],
-   "yaw": -134.61,
+   "yaw": -86.2,
    "tags": [
     "tree"
    ]
@@ -18054,46 +19093,46 @@
     -14679.4,
     12.0
    ],
-   "yaw": -194.18,
+   "yaw": -316.08,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_65",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -12671.7,
     -14823.9,
     12.0
    ],
-   "yaw": -330.66,
+   "yaw": -30.84,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_66",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -13118.3,
     -14979.5,
     12.0
    ],
-   "yaw": -116.7,
+   "yaw": -293.77,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_67",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -23311.3,
     -18484.6,
     12.0
    ],
-   "yaw": -40.27,
+   "yaw": -275.7,
    "tags": [
     "tree"
    ]
@@ -18106,33 +19145,33 @@
     32656.1,
     12.0
    ],
-   "yaw": -316.34,
+   "yaw": -237.51,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_69",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -22679.4,
     31702.6,
     12.0
    ],
-   "yaw": -86.2,
+   "yaw": -59.45,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_70",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -25467.8,
     31515.9,
     12.0
    ],
-   "yaw": -316.08,
+   "yaw": -314.08,
    "tags": [
     "tree"
    ]
@@ -18145,20 +19184,20 @@
     31373.7,
     12.0
    ],
-   "yaw": -30.84,
+   "yaw": -347.17,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_72",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -22333.8,
     30743.6,
     12.0
    ],
-   "yaw": -293.77,
+   "yaw": -271.9,
    "tags": [
     "tree"
    ]
@@ -18171,7 +19210,7 @@
     30429.1,
     12.0
    ],
-   "yaw": -275.7,
+   "yaw": -72.41,
    "tags": [
     "tree"
    ]
@@ -18184,7 +19223,7 @@
     30347.9,
     12.0
    ],
-   "yaw": -237.51,
+   "yaw": -143.64,
    "tags": [
     "tree"
    ]
@@ -18197,20 +19236,20 @@
     30327.9,
     12.0
    ],
-   "yaw": -59.45,
+   "yaw": -233.96,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_76",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -12270.4,
     30116.8,
     12.0
    ],
-   "yaw": -314.08,
+   "yaw": -323.86,
    "tags": [
     "tree"
    ]
@@ -18223,33 +19262,33 @@
     29905.6,
     12.0
    ],
-   "yaw": -347.17,
+   "yaw": -43.56,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_78",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -21991.1,
     29805.6,
     12.0
    ],
-   "yaw": -271.9,
+   "yaw": -23.05,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_79",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -11889.6,
     29594.5,
     12.0
    ],
-   "yaw": -72.41,
+   "yaw": -211.79,
    "tags": [
     "tree"
    ]
@@ -18262,33 +19301,33 @@
     29495.5,
     12.0
    ],
-   "yaw": -143.64,
+   "yaw": -211.84,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_81",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -25453.9,
     29406.6,
     12.0
    ],
-   "yaw": -233.96,
+   "yaw": -25.56,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_82",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -12094.6,
     29383.3,
     12.0
    ],
-   "yaw": -323.86,
+   "yaw": -21.19,
    "tags": [
     "tree"
    ]
@@ -18301,7 +19340,7 @@
     29194.4,
     12.0
    ],
-   "yaw": -43.56,
+   "yaw": -325.95,
    "tags": [
     "tree"
    ]
@@ -18314,7 +19353,7 @@
     29175.5,
     12.0
    ],
-   "yaw": -23.05,
+   "yaw": -25.51,
    "tags": [
     "tree"
    ]
@@ -18327,7 +19366,7 @@
     28883.2,
     12.0
    ],
-   "yaw": -211.79,
+   "yaw": -100.25,
    "tags": [
     "tree"
    ]
@@ -18340,7 +19379,7 @@
     28827.6,
     12.0
    ],
-   "yaw": -211.84,
+   "yaw": -77.13,
    "tags": [
     "tree"
    ]
@@ -18353,7 +19392,7 @@
     28672.1,
     12.0
    ],
-   "yaw": -25.56,
+   "yaw": -260.41,
    "tags": [
     "tree"
    ]
@@ -18366,7 +19405,7 @@
     28483.1,
     12.0
    ],
-   "yaw": -21.19,
+   "yaw": -207.44,
    "tags": [
     "tree"
    ]
@@ -18379,7 +19418,7 @@
     28484.2,
     12.0
    ],
-   "yaw": -325.95,
+   "yaw": -282.46,
    "tags": [
     "tree"
    ]
@@ -18392,7 +19431,7 @@
     28305.3,
     12.0
    ],
-   "yaw": -25.51,
+   "yaw": -68.55,
    "tags": [
     "tree"
    ]
@@ -18405,7 +19444,7 @@
     28205.3,
     12.0
    ],
-   "yaw": -100.25,
+   "yaw": -237.23,
    "tags": [
     "tree"
    ]
@@ -18418,7 +19457,7 @@
     27987.5,
     12.0
    ],
-   "yaw": -77.13,
+   "yaw": -152.49,
    "tags": [
     "tree"
    ]
@@ -18431,33 +19470,33 @@
     27983.0,
     12.0
    ],
-   "yaw": -260.41,
+   "yaw": -310.98,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_94",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -21280.8,
     27898.6,
     12.0
    ],
-   "yaw": -207.44,
+   "yaw": -242.41,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_95",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11940.9,
     27783.0,
     12.0
    ],
-   "yaw": -282.46,
+   "yaw": -35.43,
    "tags": [
     "tree"
    ]
@@ -18470,7 +19509,7 @@
     27584.1,
     12.0
    ],
-   "yaw": -68.55,
+   "yaw": -262.16,
    "tags": [
     "tree"
    ]
@@ -18483,7 +19522,7 @@
     27282.9,
     12.0
    ],
-   "yaw": -237.23,
+   "yaw": -89.52,
    "tags": [
     "tree"
    ]
@@ -18496,7 +19535,7 @@
     27082.9,
     12.0
    ],
-   "yaw": -152.49,
+   "yaw": -193.06,
    "tags": [
     "tree"
    ]
@@ -18509,7 +19548,7 @@
     26956.2,
     12.0
    ],
-   "yaw": -310.98,
+   "yaw": -151.88,
    "tags": [
     "tree"
    ]
@@ -18522,46 +19561,46 @@
     26790.6,
     12.0
    ],
-   "yaw": -242.41,
+   "yaw": -166.55,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_101",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -11406.3,
     26716.1,
     12.0
    ],
-   "yaw": -35.43,
+   "yaw": -159.53,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_102",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -19100.9,
     26561.7,
     12.0
    ],
-   "yaw": -262.16,
+   "yaw": -35.25,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_103",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -20628.3,
     25971.5,
     12.0
    ],
-   "yaw": -89.52,
+   "yaw": -359.74,
    "tags": [
     "tree"
    ]
@@ -18574,7 +19613,7 @@
     25703.7,
     12.0
    ],
-   "yaw": -193.06,
+   "yaw": -348.84,
    "tags": [
     "tree"
    ]
@@ -18587,7 +19626,7 @@
     25661.5,
     12.0
    ],
-   "yaw": -151.88,
+   "yaw": -59.87,
    "tags": [
     "tree"
    ]
@@ -18600,7 +19639,7 @@
     25116.9,
     12.0
    ],
-   "yaw": -166.55,
+   "yaw": -173.29,
    "tags": [
     "tree"
    ]
@@ -18613,33 +19652,33 @@
     24794.7,
     12.0
    ],
-   "yaw": -159.53,
+   "yaw": -324.88,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_108",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -22905.7,
     24471.3,
     12.0
    ],
-   "yaw": -35.25,
+   "yaw": -136.43,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_109",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -22397.5,
     23214.4,
     12.0
    ],
-   "yaw": -359.74,
+   "yaw": -95.47,
    "tags": [
     "tree"
    ]
@@ -18652,33 +19691,33 @@
     21838.5,
     12.0
    ],
-   "yaw": -348.84,
+   "yaw": -102.69,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_111",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -17035.9,
     20927.3,
     12.0
    ],
-   "yaw": -59.87,
+   "yaw": -344.63,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_112",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -18654.2,
     20393.8,
     12.0
    ],
-   "yaw": -173.29,
+   "yaw": -238.27,
    "tags": [
     "tree"
    ]
@@ -18691,7 +19730,7 @@
     20071.6,
     12.0
    ],
-   "yaw": -324.88,
+   "yaw": -55.73,
    "tags": [
     "tree"
    ]
@@ -18704,7 +19743,7 @@
     19482.6,
     12.0
    ],
-   "yaw": -136.43,
+   "yaw": -78.37,
    "tags": [
     "tree"
    ]
@@ -18717,33 +19756,33 @@
     19115.8,
     12.0
    ],
-   "yaw": -95.47,
+   "yaw": -208.5,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_116",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -18002.5,
     18560.2,
     12.0
    ],
-   "yaw": -102.69,
+   "yaw": -21.94,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_117",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -16032.7,
     18249.0,
     12.0
    ],
-   "yaw": -344.63,
+   "yaw": -20.58,
    "tags": [
     "tree"
    ]
@@ -18756,33 +19795,33 @@
     18226.8,
     12.0
    ],
-   "yaw": -238.27,
+   "yaw": -171.64,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_119",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -17651.0,
     17593.3,
     12.0
    ],
-   "yaw": -55.73,
+   "yaw": -56.68,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_120",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -15673.9,
     17282.1,
     12.0
    ],
-   "yaw": -78.37,
+   "yaw": -28.84,
    "tags": [
     "tree"
    ]
@@ -18795,20 +19834,20 @@
     16715.4,
     12.0
    ],
-   "yaw": -208.5,
+   "yaw": -24.67,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_122",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -15359.0,
     16382.0,
     12.0
    ],
-   "yaw": -21.94,
+   "yaw": -243.08,
    "tags": [
     "tree"
    ]
@@ -18821,7 +19860,7 @@
     16293.1,
     12.0
    ],
-   "yaw": -20.58,
+   "yaw": -145.36,
    "tags": [
     "tree"
    ]
@@ -18834,7 +19873,7 @@
     15781.9,
     12.0
    ],
-   "yaw": -171.64,
+   "yaw": -88.64,
    "tags": [
     "tree"
    ]
@@ -18847,33 +19886,33 @@
     15526.3,
     12.0
    ],
-   "yaw": -56.68,
+   "yaw": -14.31,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_126",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -19430.4,
     14992.8,
     12.0
    ],
-   "yaw": -28.84,
+   "yaw": -150.92,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_127",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -16611.2,
     14848.3,
     12.0
    ],
-   "yaw": -24.67,
+   "yaw": -203.48,
    "tags": [
     "tree"
    ]
@@ -18886,7 +19925,7 @@
     13681.5,
     12.0
    ],
-   "yaw": -243.08,
+   "yaw": -336.49,
    "tags": [
     "tree"
    ]
@@ -18899,59 +19938,59 @@
     12881.3,
     12.0
    ],
-   "yaw": -145.36,
+   "yaw": -241.1,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_130",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -15578.7,
     12058.9,
     12.0
    ],
-   "yaw": -88.64,
+   "yaw": -85.93,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_131",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -13748.1,
     11992.3,
     12.0
    ],
-   "yaw": -14.31,
+   "yaw": -47.12,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_132",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -13484.5,
     11292.1,
     12.0
    ],
-   "yaw": -150.92,
+   "yaw": -108.0,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_133",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -15263.8,
     11203.2,
     12.0
    ],
-   "yaw": -203.48,
+   "yaw": -334.45,
    "tags": [
     "tree"
    ]
@@ -18964,20 +20003,20 @@
     10403.1,
     12.0
    ],
-   "yaw": -336.49,
+   "yaw": -3.35,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_135",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -13147.6,
     10392.0,
     12.0
    ],
-   "yaw": -241.1,
+   "yaw": -359.44,
    "tags": [
     "tree"
    ]
@@ -18990,7 +20029,7 @@
     9558.5,
     12.0
    ],
-   "yaw": -85.93,
+   "yaw": -26.37,
    "tags": [
     "tree"
    ]
@@ -19003,20 +20042,20 @@
     9469.6,
     12.0
    ],
-   "yaw": -47.12,
+   "yaw": -182.12,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_138",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -12525.2,
     8736.1,
     12.0
    ],
-   "yaw": -108.0,
+   "yaw": -335.97,
    "tags": [
     "tree"
    ]
@@ -19029,7 +20068,7 @@
     8591.6,
     12.0
    ],
-   "yaw": -334.45,
+   "yaw": -316.54,
    "tags": [
     "tree"
    ]
@@ -19042,59 +20081,59 @@
     7647.0,
     12.0
    ],
-   "yaw": -3.35,
+   "yaw": -102.6,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_141",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -13623.6,
     6746.8,
     12.0
    ],
-   "yaw": -359.44,
+   "yaw": -300.15,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_142",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11675.8,
     6402.3,
     12.0
    ],
-   "yaw": -26.37,
+   "yaw": -108.91,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_143",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -13264.8,
     5846.7,
     12.0
    ],
-   "yaw": -182.12,
+   "yaw": -190.42,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_144",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11426.8,
     5691.1,
     12.0
    ],
-   "yaw": -335.97,
+   "yaw": -294.16,
    "tags": [
     "tree"
    ]
@@ -19107,7 +20146,7 @@
     4979.8,
     12.0
    ],
-   "yaw": -316.54,
+   "yaw": -335.43,
    "tags": [
     "tree"
    ]
@@ -19120,7 +20159,7 @@
     4902.0,
     12.0
    ],
-   "yaw": -102.6,
+   "yaw": -338.01,
    "tags": [
     "tree"
    ]
@@ -19133,33 +20172,33 @@
     4057.4,
     12.0
    ],
-   "yaw": -300.15,
+   "yaw": -95.21,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_148",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -10474.9,
     3068.4,
     12.0
    ],
-   "yaw": -108.91,
+   "yaw": -267.27,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_149",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -12078.5,
     2601.6,
     12.0
    ],
-   "yaw": -190.42,
+   "yaw": -98.05,
    "tags": [
     "tree"
    ]
@@ -19172,7 +20211,7 @@
     2179.3,
     12.0
    ],
-   "yaw": -294.16,
+   "yaw": -75.83,
    "tags": [
     "tree"
    ]
@@ -19185,33 +20224,33 @@
     1634.8,
     12.0
    ],
-   "yaw": -335.43,
+   "yaw": -73.3,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_152",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11360.9,
     690.1,
     12.0
    ],
-   "yaw": -338.01,
+   "yaw": -307.05,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_153",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -9296.0,
     -143.4,
     12.0
    ],
-   "yaw": -95.21,
+   "yaw": -175.87,
    "tags": [
     "tree"
    ]
@@ -19224,7 +20263,7 @@
     -243.4,
     12.0
    ],
-   "yaw": -267.27,
+   "yaw": -33.23,
    "tags": [
     "tree"
    ]
@@ -19237,20 +20276,20 @@
     -1088.0,
     12.0
    ],
-   "yaw": -98.05,
+   "yaw": -298.57,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_156",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -10687.3,
     -1176.9,
     12.0
    ],
-   "yaw": -75.83,
+   "yaw": -1.28,
    "tags": [
     "tree"
    ]
@@ -19263,33 +20302,33 @@
     -2032.6,
     12.0
    ],
-   "yaw": -73.3,
+   "yaw": -229.36,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_158",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -10321.1,
     -2132.6,
     12.0
    ],
-   "yaw": -307.05,
+   "yaw": -58.17,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_159",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -8234.2,
     -2921.7,
     12.0
    ],
-   "yaw": -175.87,
+   "yaw": -198.6,
    "tags": [
     "tree"
    ]
@@ -19302,7 +20341,7 @@
     -3077.2,
     12.0
    ],
-   "yaw": -33.23,
+   "yaw": -201.93,
    "tags": [
     "tree"
    ]
@@ -19315,33 +20354,33 @@
     -5233.2,
     12.0
    ],
-   "yaw": -298.57,
+   "yaw": -27.09,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_162",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -9112.9,
     -5433.2,
     12.0
    ],
-   "yaw": -1.28,
+   "yaw": -325.41,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_163",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -7179.8,
     -5766.6,
     12.0
    ],
-   "yaw": -229.36,
+   "yaw": -12.97,
    "tags": [
     "tree"
    ]
@@ -19354,7 +20393,7 @@
     -6244.5,
     12.0
    ],
-   "yaw": -58.17,
+   "yaw": -209.7,
    "tags": [
     "tree"
    ]
@@ -19367,7 +20406,7 @@
     -7789.2,
     12.0
    ],
-   "yaw": -198.6,
+   "yaw": -154.72,
    "tags": [
     "tree"
    ]
@@ -19380,7 +20419,7 @@
     -8389.4,
     12.0
    ],
-   "yaw": -201.93,
+   "yaw": -110.97,
    "tags": [
     "tree"
    ]
@@ -19393,20 +20432,20 @@
     -8756.1,
     12.0
    ],
-   "yaw": -27.09,
+   "yaw": -323.61,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_168",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -7692.3,
     -9245.1,
     12.0
    ],
-   "yaw": -325.41,
+   "yaw": -245.54,
    "tags": [
     "tree"
    ]
@@ -19419,20 +20458,20 @@
     -9756.3,
     12.0
    ],
-   "yaw": -12.97,
+   "yaw": -37.01,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_170",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -7362.8,
     -10223.0,
     12.0
    ],
-   "yaw": -209.7,
+   "yaw": -318.29,
    "tags": [
     "tree"
    ]
@@ -19445,20 +20484,20 @@
     -13923.7,
     12.0
    ],
-   "yaw": -154.72,
+   "yaw": -350.58,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_172",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -5920.3,
     -14234.9,
     12.0
    ],
-   "yaw": -110.97,
+   "yaw": -55.64,
    "tags": [
     "tree"
    ]
@@ -19471,7 +20510,7 @@
     -14846.1,
     12.0
    ],
-   "yaw": -323.61,
+   "yaw": -311.26,
    "tags": [
     "tree"
    ]
@@ -19484,33 +20523,33 @@
     -15713.0,
     12.0
    ],
-   "yaw": -245.54,
+   "yaw": -317.31,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_175",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -5210.0,
     -16146.4,
     12.0
    ],
-   "yaw": -37.01,
+   "yaw": -64.57,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_176",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -3145.0,
     -16668.7,
     12.0
    ],
-   "yaw": -318.29,
+   "yaw": -281.66,
    "tags": [
     "tree"
    ]
@@ -19523,7 +20562,7 @@
     -17135.4,
     12.0
    ],
-   "yaw": -350.58,
+   "yaw": -288.8,
    "tags": [
     "tree"
    ]
@@ -19536,7 +20575,7 @@
     -17591.1,
     12.0
    ],
-   "yaw": -55.64,
+   "yaw": -291.87,
    "tags": [
     "tree"
    ]
@@ -19549,20 +20588,20 @@
     -18124.5,
     12.0
    ],
-   "yaw": -311.26,
+   "yaw": -57.31,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_180",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11606.2,
     13924.8,
     12.0
    ],
-   "yaw": -317.31,
+   "yaw": -38.91,
    "tags": [
     "tree"
    ]
@@ -19575,7 +20614,7 @@
     13845.9,
     12.0
    ],
-   "yaw": -64.57,
+   "yaw": -309.09,
    "tags": [
     "tree"
    ]
@@ -19588,7 +20627,7 @@
     13767.0,
     12.0
    ],
-   "yaw": -281.66,
+   "yaw": -71.85,
    "tags": [
     "tree"
    ]
@@ -19601,46 +20640,46 @@
     13599.2,
     12.0
    ],
-   "yaw": -288.8,
+   "yaw": -125.88,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_184",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -10940.6,
     13538.1,
     12.0
    ],
-   "yaw": -291.87,
+   "yaw": -80.25,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_185",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -7674.0,
     13454.8,
     12.0
    ],
-   "yaw": -57.31,
+   "yaw": -69.53,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_186",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -12993.1,
     13440.3,
     12.0
    ],
-   "yaw": -38.91,
+   "yaw": -100.3,
    "tags": [
     "tree"
    ]
@@ -19653,7 +20692,7 @@
     13282.5,
     12.0
    ],
-   "yaw": -309.09,
+   "yaw": -348.08,
    "tags": [
     "tree"
    ]
@@ -19666,46 +20705,46 @@
     13110.2,
     12.0
    ],
-   "yaw": -71.85,
+   "yaw": -126.41,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_189",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -8613.5,
     13103.6,
     12.0
    ],
-   "yaw": -125.88,
+   "yaw": -143.88,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_190",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -12324.6,
     13046.9,
     12.0
    ],
-   "yaw": -80.25,
+   "yaw": -119.21,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_191",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -10707.0,
     12932.4,
     12.0
    ],
-   "yaw": -69.53,
+   "yaw": -41.52,
    "tags": [
     "tree"
    ]
@@ -19718,7 +20757,7 @@
     12573.5,
     12.0
    ],
-   "yaw": -100.3,
+   "yaw": -64.28,
    "tags": [
     "tree"
    ]
@@ -19731,20 +20770,20 @@
     12567.9,
     12.0
    ],
-   "yaw": -348.08,
+   "yaw": -13.77,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_194",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -12114.4,
     12485.7,
     12.0
    ],
-   "yaw": -126.41,
+   "yaw": -156.44,
    "tags": [
     "tree"
    ]
@@ -19757,46 +20796,46 @@
     12405.7,
     12.0
    ],
-   "yaw": -143.88,
+   "yaw": -283.11,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_196",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -10485.9,
     12404.6,
     12.0
    ],
-   "yaw": -119.21,
+   "yaw": -218.24,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_197",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -12580.9,
     12322.3,
     12.0
    ],
-   "yaw": -41.52,
+   "yaw": -41.63,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_198",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -10946.5,
     12244.5,
     12.0
    ],
-   "yaw": -64.28,
+   "yaw": -68.43,
    "tags": [
     "tree"
    ]
@@ -19809,20 +20848,20 @@
     12219.0,
     12.0
    ],
-   "yaw": -13.77,
+   "yaw": -255.16,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_200",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -6603.5,
     12182.3,
     12.0
    ],
-   "yaw": -156.44,
+   "yaw": -187.17,
    "tags": [
     "tree"
    ]
@@ -19835,46 +20874,46 @@
     12052.3,
     12.0
    ],
-   "yaw": -283.11,
+   "yaw": -247.27,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_202",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -5437.0,
     12051.2,
     12.0
    ],
-   "yaw": -218.24,
+   "yaw": -265.33,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_203",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -12484.2,
     12023.4,
     12.0
    ],
-   "yaw": -41.63,
+   "yaw": -131.12,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_204",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -11876.4,
     11888.9,
     12.0
    ],
-   "yaw": -68.43,
+   "yaw": -341.59,
    "tags": [
     "tree"
    ]
@@ -19887,20 +20926,20 @@
     11705.5,
     12.0
    ],
-   "yaw": -255.16,
+   "yaw": -224.34,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_206",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -9674.5,
     11684.4,
     12.0
    ],
-   "yaw": -187.17,
+   "yaw": -305.29,
    "tags": [
     "tree"
    ]
@@ -19913,7 +20952,7 @@
     11506.6,
     12.0
    ],
-   "yaw": -247.27,
+   "yaw": -324.02,
    "tags": [
     "tree"
    ]
@@ -19926,7 +20965,7 @@
     11338.8,
     12.0
    ],
-   "yaw": -265.33,
+   "yaw": -111.34,
    "tags": [
     "tree"
    ]
@@ -19939,20 +20978,20 @@
     11316.6,
     12.0
    ],
-   "yaw": -131.12,
+   "yaw": -117.43,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_210",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -11071.7,
     11166.5,
     12.0
    ],
-   "yaw": -341.59,
+   "yaw": -106.44,
    "tags": [
     "tree"
    ]
@@ -19965,7 +21004,7 @@
     11124.3,
     12.0
    ],
-   "yaw": -224.34,
+   "yaw": -69.06,
    "tags": [
     "tree"
    ]
@@ -19978,7 +21017,7 @@
     10996.5,
     12.0
    ],
-   "yaw": -305.29,
+   "yaw": -338.53,
    "tags": [
     "tree"
    ]
@@ -19991,20 +21030,20 @@
     15599.6,
     12.0
    ],
-   "yaw": -324.02,
+   "yaw": -269.33,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_214",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -7381.1,
     15425.1,
     12.0
    ],
-   "yaw": -111.34,
+   "yaw": -221.59,
    "tags": [
     "tree"
    ]
@@ -20017,20 +21056,20 @@
     15252.9,
     12.0
    ],
-   "yaw": -117.43,
+   "yaw": -146.19,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_216",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -8342.6,
     15073.9,
     12.0
    ],
-   "yaw": -106.44,
+   "yaw": -109.39,
    "tags": [
     "tree"
    ]
@@ -20043,7 +21082,7 @@
     15053.9,
     12.0
    ],
-   "yaw": -69.06,
+   "yaw": -154.76,
    "tags": [
     "tree"
    ]
@@ -20056,20 +21095,20 @@
     14912.8,
     12.0
    ],
-   "yaw": -338.53,
+   "yaw": -218.4,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_219",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -9718.5,
     14600.5,
     12.0
    ],
-   "yaw": -269.33,
+   "yaw": -167.4,
    "tags": [
     "tree"
    ]
@@ -20082,33 +21121,33 @@
     14538.3,
     12.0
    ],
-   "yaw": -221.59,
+   "yaw": -243.23,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_221",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -8607.7,
     14398.3,
     12.0
    ],
-   "yaw": -146.19,
+   "yaw": -170.35,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_222",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -10668.9,
     14260.5,
     12.0
    ],
-   "yaw": -109.39,
+   "yaw": -61.09,
    "tags": [
     "tree"
    ]
@@ -20121,7 +21160,7 @@
     13987.1,
     12.0
    ],
-   "yaw": -154.76,
+   "yaw": -102.16,
    "tags": [
     "tree"
    ]
@@ -20134,7 +21173,7 @@
     10954.3,
     12.0
    ],
-   "yaw": -218.4,
+   "yaw": -227.86,
    "tags": [
     "tree"
    ]
@@ -20147,7 +21186,7 @@
     10932.1,
     12.0
    ],
-   "yaw": -167.4,
+   "yaw": -33.62,
    "tags": [
     "tree"
    ]
@@ -20160,33 +21199,33 @@
     10799.8,
     12.0
    ],
-   "yaw": -243.23,
+   "yaw": -242.21,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_227",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -7102.9,
     10760.9,
     12.0
    ],
-   "yaw": -170.35,
+   "yaw": -290.36,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_228",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -11322.9,
     10428.6,
     12.0
    ],
-   "yaw": -61.09,
+   "yaw": -8.79,
    "tags": [
     "tree"
    ]
@@ -20199,7 +21238,7 @@
     10398.6,
     12.0
    ],
-   "yaw": -102.16,
+   "yaw": -354.22,
    "tags": [
     "tree"
    ]
@@ -20212,7 +21251,7 @@
     10367.5,
     12.0
    ],
-   "yaw": -227.86,
+   "yaw": -305.91,
    "tags": [
     "tree"
    ]
@@ -20225,33 +21264,33 @@
     10218.6,
     12.0
    ],
-   "yaw": -33.62,
+   "yaw": -163.95,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_232",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -8547.6,
     10188.6,
     12.0
    ],
-   "yaw": -242.21,
+   "yaw": -207.24,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_233",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -9495.9,
     9820.7,
     12.0
    ],
-   "yaw": -290.36,
+   "yaw": -250.69,
    "tags": [
     "tree"
    ]
@@ -20264,7 +21303,7 @@
     9639.6,
     12.0
    ],
-   "yaw": -8.79,
+   "yaw": -143.88,
    "tags": [
     "tree"
    ]
@@ -20277,20 +21316,20 @@
     9625.1,
     12.0
    ],
-   "yaw": -354.22,
+   "yaw": -236.18,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_236",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -10887.9,
     9267.3,
     12.0
    ],
-   "yaw": -305.91,
+   "yaw": -321.36,
    "tags": [
     "tree"
    ]
@@ -20303,20 +21342,20 @@
     9057.3,
     12.0
    ],
-   "yaw": -163.95,
+   "yaw": -280.23,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_238",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -26650.4,
     -14728.3,
     12.0
    ],
-   "yaw": -207.24,
+   "yaw": -63.32,
    "tags": [
     "tree"
    ]
@@ -20329,7 +21368,7 @@
     25445.9,
     12.0
    ],
-   "yaw": -250.69,
+   "yaw": -186.46,
    "tags": [
     "tree"
    ]
@@ -20342,7 +21381,7 @@
     25231.4,
     12.0
    ],
-   "yaw": -143.88,
+   "yaw": -200.67,
    "tags": [
     "tree"
    ]
@@ -20355,7 +21394,7 @@
     25503.7,
     12.0
    ],
-   "yaw": -236.18,
+   "yaw": -164.33,
    "tags": [
     "tree"
    ]
@@ -20368,20 +21407,20 @@
     24836.9,
     12.0
    ],
-   "yaw": -321.36,
+   "yaw": -240.33,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_243",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     19010.8,
     26178.3,
     12.0
    ],
-   "yaw": -280.23,
+   "yaw": -214.36,
    "tags": [
     "tree"
    ]
@@ -20394,7 +21433,7 @@
     26650.6,
     12.0
    ],
-   "yaw": -63.32,
+   "yaw": -220.55,
    "tags": [
     "tree"
    ]
@@ -20407,7 +21446,7 @@
     27106.2,
     12.0
    ],
-   "yaw": -186.46,
+   "yaw": -321.13,
    "tags": [
     "tree"
    ]
@@ -20420,20 +21459,20 @@
     27665.2,
     12.0
    ],
-   "yaw": -200.67,
+   "yaw": -299.0,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_247",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     17470.1,
     27437.4,
     12.0
    ],
-   "yaw": -164.33,
+   "yaw": -160.53,
    "tags": [
     "tree"
    ]
@@ -20446,20 +21485,20 @@
     27963.0,
     12.0
    ],
-   "yaw": -240.33,
+   "yaw": -267.72,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_249",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     15270.4,
     28137.5,
     12.0
    ],
-   "yaw": -214.36,
+   "yaw": -162.03,
    "tags": [
     "tree"
    ]
@@ -20472,46 +21511,46 @@
     25786.0,
     12.0
    ],
-   "yaw": -220.55,
+   "yaw": -302.35,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_251",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     20892.7,
     26022.7,
     12.0
    ],
-   "yaw": -321.13,
+   "yaw": -275.69,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_252",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     20635.7,
     24684.6,
     12.0
    ],
-   "yaw": -299.0,
+   "yaw": -174.45,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_253",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     18690.8,
     23916.7,
     12.0
    ],
-   "yaw": -160.53,
+   "yaw": -98.86,
    "tags": [
     "tree"
    ]
@@ -20524,7 +21563,7 @@
     24010.1,
     12.0
    ],
-   "yaw": -267.72,
+   "yaw": -256.88,
    "tags": [
     "tree"
    ]
@@ -20537,7 +21576,7 @@
     23515.5,
     12.0
    ],
-   "yaw": -162.03,
+   "yaw": -97.82,
    "tags": [
     "tree"
    ]
@@ -20550,7 +21589,7 @@
     23007.7,
     12.0
    ],
-   "yaw": -302.35,
+   "yaw": -321.49,
    "tags": [
     "tree"
    ]
@@ -20563,20 +21602,20 @@
     25222.5,
     12.0
    ],
-   "yaw": -275.69,
+   "yaw": -49.81,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_258",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     9354.6,
     29964.5,
     12.0
    ],
-   "yaw": -174.45,
+   "yaw": -137.89,
    "tags": [
     "tree"
    ]
@@ -20589,7 +21628,7 @@
     30045.6,
     12.0
    ],
-   "yaw": -98.86,
+   "yaw": -254.31,
    "tags": [
     "tree"
    ]
@@ -20602,7 +21641,7 @@
     29897.8,
     12.0
    ],
-   "yaw": -256.88,
+   "yaw": -149.35,
    "tags": [
     "tree"
    ]
@@ -20615,7 +21654,7 @@
     29358.9,
     12.0
    ],
-   "yaw": -97.82,
+   "yaw": -195.34,
    "tags": [
     "tree"
    ]
@@ -20628,7 +21667,7 @@
     29631.1,
     12.0
    ],
-   "yaw": -321.49,
+   "yaw": -22.42,
    "tags": [
     "tree"
    ]
@@ -20641,20 +21680,20 @@
     30035.6,
     12.0
    ],
-   "yaw": -49.81,
+   "yaw": -140.21,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_264",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     6150.2,
     30064.5,
     12.0
    ],
-   "yaw": -137.89,
+   "yaw": -340.58,
    "tags": [
     "tree"
    ]
@@ -20667,20 +21706,20 @@
     32194.9,
     12.0
    ],
-   "yaw": -254.31,
+   "yaw": -308.42,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_266",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     5073.8,
     27097.3,
     12.0
    ],
-   "yaw": -149.35,
+   "yaw": -136.94,
    "tags": [
     "tree"
    ]
@@ -20693,7 +21732,7 @@
     25472.6,
     12.0
    ],
-   "yaw": -195.34,
+   "yaw": -339.39,
    "tags": [
     "tree"
    ]
@@ -20706,7 +21745,7 @@
     25194.7,
     12.0
    ],
-   "yaw": -22.42,
+   "yaw": -271.25,
    "tags": [
     "tree"
    ]
@@ -20719,7 +21758,7 @@
     28195.3,
     12.0
    ],
-   "yaw": -140.21,
+   "yaw": -193.76,
    "tags": [
     "tree"
    ]
@@ -20732,33 +21771,33 @@
     28662.1,
     12.0
    ],
-   "yaw": -340.58,
+   "yaw": -196.61,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_271",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -1968.3,
     28999.9,
     12.0
    ],
-   "yaw": -308.42,
+   "yaw": -323.21,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_272",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     498.7,
     29782.3,
     12.0
    ],
-   "yaw": -136.94,
+   "yaw": -78.99,
    "tags": [
     "tree"
    ]
@@ -20771,7 +21810,7 @@
     29545.6,
     12.0
    ],
-   "yaw": -339.39,
+   "yaw": -174.83,
    "tags": [
     "tree"
    ]
@@ -20784,20 +21823,20 @@
     29217.7,
     12.0
    ],
-   "yaw": -271.25,
+   "yaw": -121.01,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_275",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -3824.6,
     26116.0,
     12.0
    ],
-   "yaw": -193.76,
+   "yaw": -287.33,
    "tags": [
     "tree"
    ]
@@ -20810,33 +21849,33 @@
     26327.2,
     12.0
    ],
-   "yaw": -196.61,
+   "yaw": -59.42,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_277",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -2940.7,
     26465.0,
     12.0
    ],
-   "yaw": -323.21,
+   "yaw": -331.03,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_278",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -2568.7,
     26603.9,
     12.0
    ],
-   "yaw": -78.99,
+   "yaw": -192.28,
    "tags": [
     "tree"
    ]
@@ -20849,20 +21888,20 @@
     26057.1,
     12.0
    ],
-   "yaw": -174.83,
+   "yaw": -213.08,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_280",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     -3189.0,
     25933.8,
     12.0
    ],
-   "yaw": -121.01,
+   "yaw": -9.76,
    "tags": [
     "tree"
    ]
@@ -20875,20 +21914,20 @@
     25737.1,
     12.0
    ],
-   "yaw": -287.33,
+   "yaw": -154.3,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_282",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     -4422.8,
     25751.5,
     12.0
    ],
-   "yaw": -59.42,
+   "yaw": -65.42,
    "tags": [
     "tree"
    ]
@@ -20901,20 +21940,20 @@
     11778.9,
     12.0
    ],
-   "yaw": -331.03,
+   "yaw": -136.48,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_284",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     14979.0,
     12001.1,
     12.0
    ],
-   "yaw": -192.28,
+   "yaw": -163.69,
    "tags": [
     "tree"
    ]
@@ -20927,33 +21966,33 @@
     12252.3,
     12.0
    ],
-   "yaw": -213.08,
+   "yaw": -274.04,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_286",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     16451.6,
     12552.4,
     12.0
    ],
-   "yaw": -9.76,
+   "yaw": -100.17,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_287",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     17332.5,
     12793.5,
     12.0
    ],
-   "yaw": -154.3,
+   "yaw": -90.82,
    "tags": [
     "tree"
    ]
@@ -20966,20 +22005,20 @@
     13035.8,
     12.0
    ],
-   "yaw": -65.42,
+   "yaw": -169.31,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_289",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     14391.7,
     14811.7,
     12.0
    ],
-   "yaw": -136.48,
+   "yaw": -194.19,
    "tags": [
     "tree"
    ]
@@ -20992,7 +22031,7 @@
     14009.3,
     12.0
    ],
-   "yaw": -163.69,
+   "yaw": -80.72,
    "tags": [
     "tree"
    ]
@@ -21005,20 +22044,20 @@
     15240.6,
     12.0
    ],
-   "yaw": -274.04,
+   "yaw": -281.24,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_292",
-   "mesh": "tree_a",
+   "mesh": "tree_b",
    "loc": [
     15098.4,
     14956.1,
     12.0
    ],
-   "yaw": -100.17,
+   "yaw": -14.49,
    "tags": [
     "tree"
    ]
@@ -21031,7 +22070,7 @@
     11386.6,
     12.0
    ],
-   "yaw": -90.82,
+   "yaw": -341.86,
    "tags": [
     "tree"
    ]
@@ -21044,7 +22083,7 @@
     11966.7,
     12.0
    ],
-   "yaw": -169.31,
+   "yaw": -302.12,
    "tags": [
     "tree"
    ]
@@ -21057,7 +22096,7 @@
     12994.7,
     12.0
    ],
-   "yaw": -194.19,
+   "yaw": -54.86,
    "tags": [
     "tree"
    ]
@@ -21070,7 +22109,7 @@
     14257.1,
     12.0
    ],
-   "yaw": -80.72,
+   "yaw": -170.48,
    "tags": [
     "tree"
    ]
@@ -21083,20 +22122,20 @@
     15654.1,
     12.0
    ],
-   "yaw": -281.24,
+   "yaw": -203.03,
    "tags": [
     "tree"
    ]
   },
   {
    "name": "tree_298",
-   "mesh": "tree_b",
+   "mesh": "tree_a",
    "loc": [
     10257.4,
     16536.4,
     12.0
    ],
-   "yaw": -14.49,
+   "yaw": -167.41,
    "tags": [
     "tree"
    ]
@@ -21109,7 +22148,7 @@
     17411.1,
     12.0
    ],
-   "yaw": -341.86,
+   "yaw": -276.08,
    "tags": [
     "tree"
    ]
@@ -21122,7 +22161,7 @@
     18301.2,
     12.0
    ],
-   "yaw": -302.12,
+   "yaw": -218.12,
    "tags": [
     "tree"
    ]
@@ -21135,7 +22174,7 @@
     19450.3,
     12.0
    ],
-   "yaw": -54.86,
+   "yaw": -258.61,
    "tags": [
     "tree"
    ]
@@ -21148,7 +22187,7 @@
     20741.7,
     12.0
    ],
-   "yaw": -170.48,
+   "yaw": -347.3,
    "tags": [
     "tree"
    ]
@@ -21161,7 +22200,7 @@
     21949.7,
     12.0
    ],
-   "yaw": -203.03,
+   "yaw": -208.33,
    "tags": [
     "tree"
    ]
@@ -21174,7 +22213,7 @@
     23212.1,
     12.0
    ],
-   "yaw": -167.41,
+   "yaw": -207.29,
    "tags": [
     "tree"
    ]
@@ -21187,7 +22226,7 @@
     24938.0,
     12.0
    ],
-   "yaw": -276.08,
+   "yaw": -142.8,
    "tags": [
     "tree"
    ]
@@ -24450,7 +25489,28 @@
   32000
  ],
  "sun": {
-  "yaw": 35,
-  "pitch": -48
+  "yaw": 60,
+  "pitch": -24
+ },
+ "mood": {
+  "sun_yaw": 60,
+  "sun_pitch": -24,
+  "sun_intensity": 3.2,
+  "sun_color": [
+   228,
+   230,
+   240
+  ],
+  "skylight": 1.6,
+  "fog_density": 0.045,
+  "fog_falloff": 0.22,
+  "fog_start": 1500,
+  "fog_color": [
+   0.62,
+   0.6,
+   0.55
+  ],
+  "saturation": 0.78,
+  "contrast": 1.06
  }
 }

@@ -53,12 +53,13 @@ Rule of thumb: **anything binary in `Content/` is generated**; the sources of tr
 | `assets/facades/` | REAL facades: one photo atlas per building (`bld_<id>.jpg`) + `index.json` (wall → atlas rectangle) |
 | `assets/ortho/` | REAL ground: the IGN aerial orthophoto of the box (`ground.jpg` + `ground.json`) |
 | `assets/sounds/` | synthesised WAV sound effects (`tools/make_sounds.py`) |
+| `assets/models/` | user-supplied art exported as FBX pieces + textures (`tools/import_blender_assets.py`) |
 | `data/map/layout.json` | level design (editable) |
 | `data/map/level.json` | generated actor list consumed by the Unreal build script |
 | `data/map/meshes/` | generated OBJ/MTL meshes |
 | `data/preview_osm.png`, `data/preview_layout.png` | top-down previews |
 | `assets/textures/` | generated PNG textures (facades, roofs, asphalt, pavement, grass…) |
-| `tools/` | Python pipeline: `fetch_osm.py`, `fetch_ign.py`, `fetch_panoramax.py`, `osm_lib.py`, `preview_osm.py`, `make_textures.py`, `build_facades.py` (needs Pillow + numpy), `build_map.py` |
+| `tools/` | Python pipeline: `fetch_osm.py`, `fetch_ign.py`, `fetch_panoramax.py`, `osm_lib.py`, `preview_osm.py`, `make_textures.py`, `make_sounds.py`, `build_facades.py` (needs Pillow + numpy), `import_blender_assets.py` (+ `tools/blender/`), `build_map.py` |
 | `tools/ue/` | PowerShell wrappers: compile (`build_project.ps1`), run the level builder (`build_level.ps1`), whole pipeline (`build_all.ps1`), launch the game standalone (`play.ps1`) |
 | `Play.bat` | double-click launcher → `tools/ue/play.ps1` (runs `UnrealEditor.exe <uproject> -game`, no editor UI) |
 | `unreal/ParisBombMap/` | the Unreal Engine 5.8 project |
@@ -235,12 +236,18 @@ The match rules follow `_CODE/fps-reborn` (a browser FPS by the same user), rule
   grenade pips.
 * `ABotController` — buying per the ported `_botsBuy`, grenade use, drop pickup.
 
-## User-supplied art (planned)
+## User-supplied art and the war zone
 
-`assets/models/<pack>/` holds user-supplied models (first: the *3 Piece Parisian Apartment Building* Blender
-pack). `tools/import_blender_assets.py` runs Blender headless to split a pack into named pieces as FBX with
-their textures; `build_level.py` imports them to `/Game/Models/<pack>/` and `build_map.py` places instances
-from `layout.json` (`models` section) like any prop. War-zone dressing lives in `layout.json` → `warzone`.
+`assets/models/<pack>/` holds pieces exported from user-supplied Blender packs (first: the *3 Piece Parisian
+Apartment Building*). `tools/import_blender_assets.py` runs Blender headless with `tools/blender/export_parisian.py`
+(rebuild materials with real texture files, box UVs on walls, decimate, join per building, cut ruins / facade slabs
+with bisect planes, export FBX + textures, write `pieces.json` with sizes). `build_level.py` imports them through
+`/Game/Pipelines/FbxPipeline` (Interchange, materials + textures) into `/Game/Models/<pack>/`; `build_map.py` places
+instances from `layout.json › warzone.models` (actors with a `model` key instead of `mesh`) and the dressing props
+from `warzone.props` (generated meshes: rubble, sandbags, hedgehogs, jersey barriers, burnt cars, craters, smoke
+columns), each snapped to the nearest free spot (`snap_spot`). `warzone.mood` drives the sun, sky light, fog and
+post-process grading in `build_level.py`. The photo facades, ground and street layout are untouched, so the
+neighbourhood stays recognisable.
 
 ## Build / run
 
