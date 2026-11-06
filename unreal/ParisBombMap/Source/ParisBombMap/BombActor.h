@@ -35,5 +35,6 @@ public:
 
 private:
 	float BlinkPhase = 0.f;
+	bool bGeneratedMesh = false;
 	bool bWasOn = false;
 };

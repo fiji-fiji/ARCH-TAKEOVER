@@ -6,9 +6,11 @@
 
 class AFPSCharacter;
 class ABombGameState;
+class ABombGameMode;
 class UFont;
 
-/** Canvas-drawn HUD: crosshair, health, ammo, round/bomb timer, scores, interaction progress, callout, kill feed, scoreboard.
+/** Canvas-drawn HUD: crosshair, health / kevlar, money, weapon + ammo, grenades, round / bomb timer, scores,
+ *  interaction progress, callout, kill feed, scoreboard, flash white-out, scope, and the buy menu (B).
  *  Every text is sized in pixels of a 1080p screen (scaled with the window height) so it stays readable. */
 UCLASS()
 class PARISBOMBMAP_API ABombHUD : public AHUD
@@ -17,6 +19,7 @@ class PARISBOMBMAP_API ABombHUD : public AHUD
 
 public:
 	virtual void DrawHUD() override;
+	virtual void NotifyHitBoxClick(FName BoxName) override;
 
 	// text sizes in pixels at 1080p (multiplied by the UI scale)
 	static constexpr float PX_SMALL = 22.f;
@@ -31,9 +34,13 @@ private:
 	FVector2D Measure(const FString& Str, float Px) const;
 	void DrawBar(float X, float Y, float W, float H, float Fraction, const FLinearColor& Fill, const FLinearColor& Back);
 	void DrawScoreboard(ABombGameState* GS, float W, float H);
+	void DrawShop(ABombGameMode* GM, ABombGameState* GS, AFPSCharacter* Me, float W, float H);
+	void DrawCard(ABombGameMode* GM, AFPSCharacter* Me, FName Key, float X, float Y, float CW, float CH, bool bOwned, const FString& Extra);
 	static FString FormatTime(float Seconds);
+	static FString Money(int32 Amount);
 
 	UPROPERTY() TObjectPtr<UFont> Font;
 	float FontHeight = 1.f;   // height of the font at scale 1 (measured once)
 	float S = 1.f;            // UI scale = window height / 1080
+	FName HoverBox;
 };

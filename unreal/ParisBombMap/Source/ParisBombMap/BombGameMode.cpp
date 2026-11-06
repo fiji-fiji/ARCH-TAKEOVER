@@ -10,6 +10,9 @@
 #include "BombActor.h"
 #include "TeamPlayerStart.h"
 #include "CalloutMarker.h"
+#include "GrenadeActor.h"
+#include "WeaponPickup.h"
+#include "Weapons.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
@@ -44,6 +47,11 @@ ABombGameState* ABombGameMode::GS() const
 	return GetGameState<ABombGameState>();
 }
 
+ABombPlayerState* ABombGameMode::PSOf(const AFPSCharacter* C)
+{
+	return C ? C->GetPlayerState<ABombPlayerState>() : nullptr;
+}
+
 void ABombGameMode::CollectWorldActors()
 {
 	Starts.Empty(); Sites.Empty(); Callouts.Empty();
@@ -63,6 +71,19 @@ ATeamPlayerStart* ABombGameMode::StartFor(EBombTeam Team, int32 Index) const
 	}
 	if (Mine.Num() == 0) return nullptr;
 	return Mine[Index % Mine.Num()];
+}
+
+bool ABombGameMode::SpawnFence(EBombTeam Team, FVector& OutCenter, float& OutRadius) const
+{
+	FVector Sum = FVector::ZeroVector; int32 N = 0;
+	for (ATeamPlayerStart* S : Starts)
+	{
+		if (S && S->TeamId == (int32)Team) { Sum += S->GetActorLocation(); ++N; }
+	}
+	if (N == 0) return false;
+	OutCenter = Sum / N;
+	OutRadius = SpawnFenceRadius;
+	return true;
 }
 
 AActor* ABombGameMode::ChoosePlayerStart_Implementation(AController* Player)
@@ -88,6 +109,7 @@ void ABombGameMode::PostLogin(APlayerController* NewPlayer)
 	{
 		PS->SetPlayerName(TEXT("You"));
 		if (PS->Team == EBombTeam::None) PS->Team = HumanTeam;
+		PS->Money = Weapons::StartMoney;
 	}
 	if (AFPSCharacter* C = Cast<AFPSCharacter>(NewPlayer->GetPawn()))
 	{
@@ -105,7 +127,6 @@ void ABombGameMode::BeginPlay()
 		S->HumanTeam = HumanTeam;
 		S->RoundNumber = 0;
 	}
-	// safety net: make sure a nav mesh exists for the bots (runtime generation is Dynamic)
 	if (UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()))
 	{
 		Nav->Build();
@@ -156,6 +177,7 @@ void ABombGameMode::SpawnBots()
 				PS->Team = Team;
 				PS->SetIsABot(true);
 				PS->SetPlayerName(FString::Printf(TEXT("%s [bot]"), BotNames[BotNameIndex++ % UE_ARRAY_COUNT(BotNames)]));
+				PS->Money = Weapons::StartMoney;
 			}
 			C->ApplyTeamVisuals();
 			Characters.Add(C);
@@ -173,6 +195,21 @@ void ABombGameMode::SetPhase(ERoundPhase Phase, float Duration)
 	}
 }
 
+void ABombGameMode::ClearRoundActors()
+{
+	TArray<AActor*> Gone;
+	for (TActorIterator<AWeaponPickup> It(GetWorld()); It; ++It) Gone.Add(*It);
+	for (TActorIterator<AGrenadeActor> It(GetWorld()); It; ++It) Gone.Add(*It);
+	for (TActorIterator<ASmokeCloud> It(GetWorld()); It; ++It) Gone.Add(*It);
+	for (AActor* A : Gone) A->Destroy();
+}
+
+bool ABombGameMode::IsPistolRound() const
+{
+	const ABombGameState* S = GS();
+	return S && (S->RoundNumber == 1 || S->RoundNumber == HalfTimeRound + 1);
+}
+
 void ABombGameMode::StartRound()
 {
 	ABombGameState* S = GS();
@@ -182,7 +219,6 @@ void ABombGameMode::StartRound()
 		bPendingTeamSwitch = false;
 		HumanTeam = OtherTeam(HumanTeam);
 		S->HumanTeam = HumanTeam;
-		// move the human to the other team and hand one bot the other way
 		AFPSCharacter* H = HumanCharacter();
 		ABombPlayerState* HPS = H ? H->GetPlayerState<ABombPlayerState>() : nullptr;
 		if (HPS)
@@ -200,6 +236,13 @@ void ABombGameMode::StartRound()
 		}
 	}
 	S->RoundNumber++;
+	const bool bHalftime = S->RoundNumber == HalfTimeRound + 1;
+	const bool bOvertime = bWinByTwo && S->RoundNumber > HalfTimeRound * 2;
+	S->bOvertime = bOvertime;
+	if (bHalftime || bOvertime)
+	{
+		SwapSides();
+	}
 	S->bBombPlanted = false;
 	S->bBombDropped = false;
 	S->BombTimeRemaining = 0.f;
@@ -207,39 +250,78 @@ void ABombGameMode::StartRound()
 	S->RoundResultText.Empty();
 	PlantedSite = nullptr;
 	if (Bomb) { Bomb->Destroy(); Bomb = nullptr; }
+	ClearRoundActors();
 	AttackSite = Sites.Num() > 0 ? Sites[Rng.RandRange(0, Sites.Num() - 1)] : nullptr;
+	if (bHalftime) { LossStreak[0] = LossStreak[1] = 0; }
 
-	// respawn everyone at their team start
+	// respawn everyone at their team start; the dead (and everyone at halftime) are back to the pistol
 	int32 Idx[2] = {0, 0};
 	TArray<AFPSCharacter*> Attackers;
 	for (AFPSCharacter* C : Characters)
 	{
 		if (!C) continue;
+		ABombPlayerState* PS = PSOf(C);
 		const EBombTeam Team = C->GetTeam();
 		const int32 T = Team == EBombTeam::Attackers ? 0 : 1;
 		ATeamPlayerStart* St = StartFor(Team, Idx[T]++);
 		const FTransform X = St ? St->GetActorTransform() : C->GetActorTransform();
+		if (bHalftime)
+		{
+			C->ResetLoadout();
+			if (PS) PS->Money = Weapons::StartMoney;
+		}
+		else if (!PS || !PS->bSurvived)
+		{
+			C->ResetLoadout();
+		}
+		C->RefillLoadout();
 		C->ResetForRound(X);
 		C->SetFrozen(true);
+		if (PS) PS->bSurvived = false;
 		if (Team == EBombTeam::Attackers) Attackers.Add(C);
 		if (ABotController* BC = Cast<ABotController>(C->GetController()))
 		{
 			BC->OnRoundStart();
 		}
 	}
-	if (Attackers.Num() > 0)
+	// the bomb: if you attack, it waits on the ground next to you; otherwise a random attacker carries it
+	AFPSCharacter* H = HumanCharacter();
+	bBombForHuman = H && !H->bDead && H->GetTeam() == EBombTeam::Attackers;
+	bBotsMayTakeBomb = !bBombForHuman;
+	if (bBombForHuman)
+	{
+		FActorSpawnParameters P;
+		P.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		FVector Loc = H->GetActorLocation() + H->GetActorForwardVector() * 150.f;
+		Loc.Z -= H->GetDefaultHalfHeight() - 12.f;
+		Bomb = GetWorld()->SpawnActor<ABombActor>(ABombActor::StaticClass(), Loc, FRotator::ZeroRotator, P);
+		if (Bomb) Bomb->SetPlanted(false);
+		S->bBombDropped = true;
+		S->BombCarrierName = TEXT("(on the ground next to you)");
+	}
+	else if (Attackers.Num() > 0)
 	{
 		AFPSCharacter* Carrier = Attackers[Rng.RandRange(0, Attackers.Num() - 1)];
-		Carrier->bHasBomb = true;
+		Carrier->OnBombPickedUp();
 		S->BombCarrierName = Carrier->GetPlayerState() ? Carrier->GetPlayerState()->GetPlayerName() : TEXT("?");
 	}
 	if (APlayerController* PC = HumanController())
 	{
 		if (APawn* P = PC->GetPawn()) PC->SetViewTarget(P);
 	}
+	// the human may walk around inside the spawn fence and shop during the buy phase
+	if (H && !H->bDead) H->SetFrozen(false);
 	UpdateAliveCounts();
-	SetPhase(ERoundPhase::Freeze, FreezeTime);
-	S->AddFeed(FString::Printf(TEXT("Round %d"), S->RoundNumber), FLinearColor::White);
+	SetPhase(ERoundPhase::Freeze, S->RoundNumber == 1 ? FirstRoundBuyTime : BuyTime);
+	// bots spend their money (the shop is open now that the phase is Freeze)
+	for (AFPSCharacter* C : Characters)
+	{
+		if (ABotController* BC = C ? Cast<ABotController>(C->GetController()) : nullptr) BC->BuyPhase();
+	}
+	FString Title = FString::Printf(TEXT("Round %d"), S->RoundNumber);
+	if (bOvertime) Title += TEXT("  OVERTIME");
+	if (bHalftime) Title += TEXT("  HALF-TIME: sides switched");
+	S->AddFeed(Title, FLinearColor::White);
 	GameSounds::UI(this, TEXT("S_RoundStart"), 0.8f);
 }
 
@@ -247,19 +329,30 @@ void ABombGameMode::EndRound(EBombTeam Winner, const FString& Reason)
 {
 	ABombGameState* S = GS();
 	if (!S || S->Phase != ERoundPhase::Live) return;
+	const EBombTeam Loser = OtherTeam(Winner);
 	if (Winner == EBombTeam::Attackers) S->ScoreAttackers++; else S->ScoreDefenders++;
+	const int32 WScore = Winner == EBombTeam::Attackers ? S->ScoreAttackers : S->ScoreDefenders;
+	const int32 LScore = Winner == EBombTeam::Attackers ? S->ScoreDefenders : S->ScoreAttackers;
 	S->RoundResultText = FString::Printf(TEXT("%s WIN - %s"), *TeamName(Winner), *Reason);
 	S->AddFeed(S->RoundResultText, TeamColor(Winner));
 	GameSounds::UI(this, Winner == HumanTeam ? TEXT("S_RoundWin") : TEXT("S_RoundLose"), 0.8f);
+
+	// money for the next round
+	const int32 LossPay = Weapons::LossMoney[FMath::Min(LossStreak[(int32)Loser], 2)];
+	LossStreak[(int32)Loser]++;
+	LossStreak[(int32)Winner] = 0;
 	for (AFPSCharacter* C : Characters)
 	{
-		if (C && !C->bDead) { C->StopFire(); C->StopInteract(); }
+		if (!C) continue;
+		if (ABombPlayerState* PS = PSOf(C)) PS->bSurvived = !C->bDead;
+		Pay(C, C->GetTeam() == Winner ? Weapons::WinMoney : LossPay);
+		if (!C->bDead) { C->StopFire(); C->StopInteract(); }
 	}
-	const bool bMatchOver = S->ScoreAttackers >= RoundsToWin || S->ScoreDefenders >= RoundsToWin;
+
+	const bool bMatchOver = WScore >= RoundsToWin && (!bWinByTwo || WScore - LScore >= 2);
 	if (bMatchOver)
 	{
-		const EBombTeam MatchWinner = S->ScoreAttackers > S->ScoreDefenders ? EBombTeam::Attackers : EBombTeam::Defenders;
-		S->MatchResultText = FString::Printf(TEXT("%s WIN THE MATCH  %d - %d"), *TeamName(MatchWinner), S->ScoreAttackers, S->ScoreDefenders);
+		S->MatchResultText = FString::Printf(TEXT("%s WIN THE MATCH  %d - %d"), *TeamName(Winner), S->ScoreAttackers, S->ScoreDefenders);
 		SetPhase(ERoundPhase::MatchOver, MatchOverTime);
 		GameSounds::UI(this, TEXT("S_MatchEnd"), 0.9f);
 		return;
@@ -267,7 +360,6 @@ void ABombGameMode::EndRound(EBombTeam Winner, const FString& Reason)
 	if (S->RoundNumber == HalfTimeRound)
 	{
 		S->RoundResultText += TEXT("   |   HALF-TIME: SWITCHING SIDES");
-		SwapSides();
 	}
 	SetPhase(ERoundPhase::PostRound, PostRoundTime);
 }
@@ -283,6 +375,7 @@ void ABombGameMode::SwapSides()
 		}
 	}
 	HumanTeam = OtherTeam(HumanTeam);
+	Swap(LossStreak[0], LossStreak[1]);
 	if (S)
 	{
 		S->HumanTeam = HumanTeam;
@@ -297,13 +390,17 @@ void ABombGameMode::ResetMatch()
 		S->ScoreAttackers = 0;
 		S->ScoreDefenders = 0;
 		S->RoundNumber = 0;
+		S->bOvertime = false;
 		S->MatchResultText.Empty();
+		LossStreak[0] = LossStreak[1] = 0;
 		for (AFPSCharacter* C : Characters)
 		{
 			if (ABombPlayerState* PS = C ? C->GetPlayerState<ABombPlayerState>() : nullptr)
 			{
 				PS->Kills = 0; PS->Deaths = 0; PS->Plants = 0; PS->Defuses = 0;
+				PS->Money = Weapons::StartMoney; PS->bSurvived = false;
 			}
+			if (C) C->ResetLoadout();
 		}
 	}
 }
@@ -341,12 +438,150 @@ APlayerController* ABombGameMode::HumanController() const
 	return UGameplayStatics::GetPlayerController(GetWorld(), 0);
 }
 
+// ---------------------------------------------------------------- economy
+
+void ABombGameMode::Pay(AFPSCharacter* C, int32 Amount)
+{
+	ABombPlayerState* PS = PSOf(C);
+	if (!PS || Amount <= 0) return;
+	PS->Money = FMath::Min(Weapons::MaxMoney, PS->Money + Amount);
+	PS->LastGain = Amount;
+	PS->LastGainTime = GetWorld()->GetTimeSeconds();
+	if (C && !C->bIsBot) GameSounds::UI(this, TEXT("S_Money"), 0.5f);
+}
+
+bool ABombGameMode::CanBuy(const AFPSCharacter* C) const
+{
+	const ABombGameState* S = GS();
+	return S && S->Phase == ERoundPhase::Freeze && C && !C->bDead;
+}
+
+int32 ABombGameMode::MinNextMoney(const AFPSCharacter* C) const
+{
+	const ABombGameState* S = GS();
+	const ABombPlayerState* PS = PSOf(C);
+	if (!S || !PS) return 0;
+	if (S->RoundNumber == HalfTimeRound) return Weapons::StartMoney;          // halftime: everyone restarts
+	const int32 LossPay = Weapons::LossMoney[FMath::Min(LossStreak[(int32)C->GetTeam()], 2)];
+	return FMath::Min(Weapons::MaxMoney, PS->Money + LossPay);
+}
+
+bool ABombGameMode::CanAfford(const AFPSCharacter* C, FName Item) const
+{
+	const ABombPlayerState* PS = PSOf(C);
+	if (!PS) return false;
+	const int32 Price = Weapons::PriceOf(Item);
+	if (Weapons::FindGrenade(Item)) return PS->Money >= Price;
+	FName Was = NAME_None;
+	if (const FWeaponDef* W = Weapons::Find(Item)) Was = W->Slot == EWeaponSlot::Main ? PS->RoundBuyMain : PS->RoundBuySide;
+	else if (Weapons::FindArmor(Item)) Was = PS->RoundBuyArmor;
+	const int32 Refund = Was.IsNone() ? 0 : Weapons::PriceOf(Was);     // bought this phase: refunded
+	return PS->Money + Refund >= Price;
+}
+
+bool ABombGameMode::Buy(AFPSCharacter* C, FName Item)
+{
+	ABombPlayerState* PS = PSOf(C);
+	if (!PS || !CanBuy(C) || !CanAfford(C, Item)) return false;
+	const int32 Price = Weapons::PriceOf(Item);
+	if (const FGrenadeDef* G = Weapons::FindGrenade(Item))
+	{
+		if (C->NadeCount(Item) >= G->Max) return false;
+		PS->Money -= Price;
+		C->AddNade(Item, +1);
+		PS->RoundBuyNades.FindOrAdd(Item)++;
+	}
+	else if (const FWeaponDef* W = Weapons::Find(Item))
+	{
+		if (W->Slot == EWeaponSlot::Knife) return false;
+		const int32 Idx = (int32)W->Slot;
+		if (C->Guns[Idx].IsValid() && C->Guns[Idx].Def == W) return false;    // already holding it
+		FName& Rb = W->Slot == EWeaponSlot::Main ? PS->RoundBuyMain : PS->RoundBuySide;
+		if (!Rb.IsNone()) PS->Money += Weapons::PriceOf(Rb);
+		PS->Money -= Price;
+		C->GiveWeapon(Item);
+		Rb = Price > 0 ? Item : NAME_None;
+	}
+	else if (const FArmorDef* A = Weapons::FindArmor(Item))
+	{
+		if (PS->RoundBuyArmor.IsNone()) PS->PrevArmor = C->Armor;
+		else
+		{
+			PS->Money += Weapons::PriceOf(PS->RoundBuyArmor);
+			if (const FArmorDef* Prev = Weapons::FindArmor(PS->RoundBuyArmor)) C->Armor = FMath::Max(0, C->Armor - Prev->Amount);
+		}
+		if (C->Armor >= A->Amount)
+		{
+			// already at least that much: undo the refund and refuse
+			if (!PS->RoundBuyArmor.IsNone())
+			{
+				PS->Money -= Weapons::PriceOf(PS->RoundBuyArmor);
+				if (const FArmorDef* Prev = Weapons::FindArmor(PS->RoundBuyArmor)) C->Armor = Prev->Amount;
+			}
+			return false;
+		}
+		PS->Money -= Price;
+		C->Armor = A->Amount;
+		PS->RoundBuyArmor = Item;
+	}
+	else
+	{
+		return false;
+	}
+	PS->Money = FMath::Clamp(PS->Money, 0, Weapons::MaxMoney);
+	if (!C->bIsBot) GameSounds::UI(this, TEXT("S_Buy"), 0.6f);
+	return true;
+}
+
+bool ABombGameMode::Sell(AFPSCharacter* C, FName Item)
+{
+	ABombPlayerState* PS = PSOf(C);
+	if (!PS || !CanBuy(C)) return false;
+	const int32 Price = Weapons::PriceOf(Item);
+	if (Weapons::FindGrenade(Item))
+	{
+		int32* N = PS->RoundBuyNades.Find(Item);
+		if (!N || *N <= 0 || C->NadeCount(Item) <= 0) return false;
+		(*N)--;
+		C->AddNade(Item, -1);
+		if (C->Held == EHeldSlot::Nade && C->NadeCount(C->NadeKind) <= 0) C->SwitchTo(C->HasMain() ? EHeldSlot::Main : EHeldSlot::Side);
+		PS->Money += Price;
+	}
+	else if (const FWeaponDef* W = Weapons::Find(Item))
+	{
+		FName& Rb = W->Slot == EWeaponSlot::Main ? PS->RoundBuyMain : PS->RoundBuySide;
+		if (Rb != Item) return false;
+		PS->Money += Price;
+		Rb = NAME_None;
+		if (W->Slot == EWeaponSlot::Main) { C->Guns[0].Clear(); if (C->Held == EHeldSlot::Main) C->Held = EHeldSlot::Side; }
+		else { C->Guns[1].Set(Weapons::Find(TEXT("p9"))); }
+		C->ApplyHeldVisuals();
+	}
+	else if (Weapons::FindArmor(Item))
+	{
+		if (PS->RoundBuyArmor != Item) return false;
+		PS->Money += Price;
+		C->Armor = PS->PrevArmor;
+		PS->RoundBuyArmor = NAME_None;
+	}
+	else
+	{
+		return false;
+	}
+	PS->Money = FMath::Clamp(PS->Money, 0, Weapons::MaxMoney);
+	if (!C->bIsBot) GameSounds::UI(this, TEXT("S_Sell"), 0.6f);
+	return true;
+}
+
+// ---------------------------------------------------------------- deaths
+
 void ABombGameMode::OnCharacterDied(AFPSCharacter* Victim, AController* Killer)
 {
 	ABombGameState* S = GS();
 	if (!S) return;
 	if (ABombPlayerState* VPS = Victim->GetPlayerState<ABombPlayerState>()) VPS->Deaths++;
 	FString KillerName = TEXT("the world");
+	AFPSCharacter* KC = Killer ? Cast<AFPSCharacter>(Killer->GetPawn()) : nullptr;
 	if (Killer)
 	{
 		if (ABombPlayerState* KPS = Killer->GetPlayerState<ABombPlayerState>())
@@ -354,9 +589,11 @@ void ABombGameMode::OnCharacterDied(AFPSCharacter* Victim, AController* Killer)
 			KPS->Kills++;
 			KillerName = KPS->GetPlayerName();
 		}
+		if (KC && KC != Victim && KC->GetTeam() != Victim->GetTeam()) Pay(KC, Weapons::KillMoney);
 	}
 	const FString VictimName = Victim->GetPlayerState() ? Victim->GetPlayerState()->GetPlayerName() : TEXT("?");
-	S->AddFeed(FString::Printf(TEXT("%s  >  %s"), *KillerName, *VictimName), TeamColor(Victim->GetTeam()));
+	const FString Weapon = Victim->LastHitWeapon.IsEmpty() ? TEXT("") : FString::Printf(TEXT(" [%s]"), *Victim->LastHitWeapon);
+	S->AddFeed(FString::Printf(TEXT("%s%s%s  >  %s"), *KillerName, *Weapon, Victim->bLastHitHeadshot ? TEXT(" (HS)") : TEXT(""), *VictimName), TeamColor(Victim->GetTeam()));
 
 	if (Victim->bHasBomb)
 	{
@@ -402,6 +639,26 @@ void ABombGameMode::UpdateSpectating()
 	}
 }
 
+void ABombGameMode::UpdateBotsMayTake()
+{
+	// your bot teammates leave the bomb for you; they only go get it if you left spawn without it,
+	// 10 s passed after GO, or you died
+	ABombGameState* S = GS();
+	bool bMay = true;
+	if (bBombForHuman && S && S->bBombDropped)
+	{
+		AFPSCharacter* H = HumanCharacter();
+		bMay = false;
+		if (S->Phase == ERoundPhase::Live && H)
+		{
+			FVector Center; float Radius;
+			const bool bInSpawn = SpawnFence(EBombTeam::Attackers, Center, Radius) && FVector::Dist2D(H->GetActorLocation(), Center) <= Radius + 300.f;
+			bMay = H->bDead || H->bHadBomb || !bInSpawn || GetWorld()->GetTimeSeconds() - LiveStartTime > 10.f;
+		}
+	}
+	bBotsMayTakeBomb = bMay;
+}
+
 void ABombGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -412,7 +669,6 @@ void ABombGameMode::Tick(float DeltaSeconds)
 		const float T = GetWorld()->GetTimeSeconds();
 		if (!bAutoShotTaken && T >= AutoShotAt - 0.5f && FParse::Param(FCommandLine::Get(), TEXT("pbm_lookmate")))
 		{
-			// dev: turn the human towards the nearest living teammate so the screenshot shows a soldier model
 			AFPSCharacter* H = HumanCharacter(); APlayerController* PC = HumanController();
 			if (H && PC)
 			{
@@ -426,6 +682,10 @@ void ABombGameMode::Tick(float DeltaSeconds)
 				if (Best) PC->SetControlRotation((Best->GetActorLocation() + FVector(0, 0, 20.f) - H->GetEyeLocation()).Rotation());
 			}
 		}
+		if (!bAutoShotTaken && T >= AutoShotAt - 1.5f && FParse::Param(FCommandLine::Get(), TEXT("pbm_openshop")))
+		{
+			if (AFPSPlayerController* PC = Cast<AFPSPlayerController>(HumanController())) PC->OpenShop();
+		}
 		if (!bAutoShotTaken && T >= AutoShotAt)
 		{
 			bAutoShotTaken = true;
@@ -435,9 +695,12 @@ void ABombGameMode::Tick(float DeltaSeconds)
 			{
 				if (!C) continue;
 				const APlayerState* PS = C->GetPlayerState();
-				UE_LOG(LogParisBomb, Log, TEXT("  %-16s team %d at (%.0f, %.0f) speed %.0f dead %d bomb %d"),
+				const ABombPlayerState* BPS = PSOf(C);
+				const FWeaponDef* D = C->HeldDef();
+				UE_LOG(LogParisBomb, Log, TEXT("  %-16s team %d at (%.0f, %.0f) speed %.0f dead %d bomb %d $%d holding %s main %s kevlar %d nades %d/%d/%d"),
 					PS ? *PS->GetPlayerName() : TEXT("?"), (int32)C->GetTeam(), C->GetActorLocation().X, C->GetActorLocation().Y,
-					C->GetVelocity().Size(), C->bDead ? 1 : 0, C->bHasBomb ? 1 : 0);
+					C->GetVelocity().Size(), C->bDead ? 1 : 0, C->bHasBomb ? 1 : 0, BPS ? BPS->Money : -1, D ? *D->Name : TEXT("-"),
+					C->HasMain() ? *C->Guns[0].Def->Name : TEXT("-"), C->Armor, C->Nades[0], C->Nades[1], C->Nades[2]);
 			}
 		}
 		if (bAutoShotTaken && T >= AutoShotAt + 4.f)
@@ -448,6 +711,7 @@ void ABombGameMode::Tick(float DeltaSeconds)
 	S->PhaseTimeRemaining -= DeltaSeconds;
 	const float Now = GetWorld()->GetTimeSeconds();
 	S->KillFeed.RemoveAll([Now](const ABombGameState::FFeedEntry& E) { return E.Expires < Now; });
+	UpdateBotsMayTake();
 
 	switch (S->Phase)
 	{
@@ -457,7 +721,15 @@ void ABombGameMode::Tick(float DeltaSeconds)
 	case ERoundPhase::Freeze:
 		if (S->PhaseTimeRemaining <= 0.f)
 		{
-			for (AFPSCharacter* C : Characters) if (C) C->SetFrozen(false);
+			for (AFPSCharacter* C : Characters)
+			{
+				if (!C) continue;
+				C->SetFrozen(false);
+				// whatever you blew before GO was practice: everyone starts the round full
+				for (FGunState& G : C->Guns) if (G.IsValid()) { G.Ammo = G.Def->MagSize; G.Reserve = G.Def->Reserve; G.Reloading = 0.f; }
+			}
+			if (AFPSPlayerController* PC = Cast<AFPSPlayerController>(HumanController())) PC->CloseShop();
+			LiveStartTime = Now;
 			SetPhase(ERoundPhase::Live, RoundTime);
 			S->AddFeed(TEXT("GO GO GO"), FLinearColor::Yellow);
 		}
@@ -469,24 +741,31 @@ void ABombGameMode::Tick(float DeltaSeconds)
 			if (S->BombTimeRemaining <= 0.f)
 			{
 				S->BombTimeRemaining = 0.f;
-				// everyone close to the bomb dies in the blast
 				if (Bomb)
 				{
 					for (AFPSCharacter* C : Characters)
 					{
-						if (C && !C->bDead && FVector::Dist(C->GetActorLocation(), Bomb->GetActorLocation()) < 1800.f)
+						if (C && !C->bDead && FVector::Dist(C->GetActorLocation(), Bomb->GetActorLocation()) < BlastRadius)
 						{
+							C->LastHitWeapon = TEXT("the bomb");
 							C->Die(nullptr, Bomb);
 						}
 					}
+					GameSounds::At(this, TEXT("S_Explosion"), Bomb->GetActorLocation(), 2.0f);
 				}
-				if (Bomb) GameSounds::At(this, TEXT("S_Explosion"), Bomb->GetActorLocation(), 2.0f);
 				EndRound(EBombTeam::Attackers, TEXT("the bomb exploded"));
 			}
 		}
 		else if (S->PhaseTimeRemaining <= 0.f)
 		{
-			EndRound(EBombTeam::Defenders, TEXT("time ran out"));
+			S->PhaseTimeRemaining = 0.f;
+			// at 0:00 the round only ends once nobody is mid-plant
+			bool bPlanting = false;
+			for (AFPSCharacter* C : Characters)
+			{
+				if (C && !C->bDead && C->bHasBomb && C->bInteracting && C->InteractProgress > 0.f) bPlanting = true;
+			}
+			if (!bPlanting) EndRound(EBombTeam::Defenders, TEXT("time ran out"));
 		}
 		UpdateSpectating();
 		break;
@@ -512,12 +791,15 @@ void ABombGameMode::TickInteract(AFPSCharacter* C, float DeltaSeconds)
 	const EBombTeam Team = C->GetTeam();
 	if (Team == EBombTeam::Attackers && C->bHasBomb && !S->bBombPlanted)
 	{
+		if (!C->GetCharacterMovement()->IsMovingOnGround()) { C->InteractProgress = 0.f; return; }
 		for (ABombSite* Site : Sites)
 		{
 			if (Site && Site->IsInside(C->GetActorLocation()))
 			{
+				if (C->InteractProgress <= 0.f && S->PhaseTimeRemaining <= 0.f) return;   // no new plant at 0:00
+				const float Before = C->InteractProgress;
 				C->InteractProgress += DeltaSeconds / PlantTime;
-				if (!C->bIsBot && FMath::FloorToInt(C->InteractProgress * 8.f) != FMath::FloorToInt((C->InteractProgress - DeltaSeconds / PlantTime) * 8.f)) GameSounds::UI(this, TEXT("S_Tick"), 0.5f);
+				if (!C->bIsBot && FMath::FloorToInt(C->InteractProgress * 8.f) != FMath::FloorToInt(Before * 8.f)) GameSounds::UI(this, TEXT("S_Tick"), 0.5f);
 				C->InteractHint = FString::Printf(TEXT("PLANTING AT %s"), *Site->SiteId);
 				if (C->InteractProgress >= 1.f)
 				{
@@ -533,8 +815,9 @@ void ABombGameMode::TickInteract(AFPSCharacter* C, float DeltaSeconds)
 	{
 		if (FVector::Dist(C->GetActorLocation(), Bomb->GetActorLocation()) < 220.f)
 		{
+			const float Before = C->InteractProgress;
 			C->InteractProgress += DeltaSeconds / DefuseTime;
-			if (!C->bIsBot && FMath::FloorToInt(C->InteractProgress * 8.f) != FMath::FloorToInt((C->InteractProgress - DeltaSeconds / DefuseTime) * 8.f)) GameSounds::UI(this, TEXT("S_Tick"), 0.5f);
+			if (!C->bIsBot && FMath::FloorToInt(C->InteractProgress * 8.f) != FMath::FloorToInt(Before * 8.f)) GameSounds::UI(this, TEXT("S_Tick"), 0.5f);
 			C->InteractHint = TEXT("DEFUSING");
 			Bomb->DefuseProgress = C->InteractProgress;
 			if (C->InteractProgress >= 1.f)
@@ -551,7 +834,7 @@ void ABombGameMode::PlantBomb(AFPSCharacter* Planter, ABombSite* Site)
 {
 	ABombGameState* S = GS();
 	if (!S || S->bBombPlanted) return;
-	Planter->bHasBomb = false;
+	Planter->OnBombPlanted();
 	Planter->StopInteract();
 	if (ABombPlayerState* PS = Planter->GetPlayerState<ABombPlayerState>()) PS->Plants++;
 	FActorSpawnParameters P;
@@ -571,7 +854,7 @@ void ABombGameMode::PlantBomb(AFPSCharacter* Planter, ABombSite* Site)
 	GameSounds::UI(this, TEXT("S_BombPlanted"), 0.9f);
 	for (AFPSCharacter* C : Characters)
 	{
-		if (ABotController* BC = C ? Cast<ABotController>(C->GetController()) : nullptr) { /* bots re-plan on their next think */ }
+		if (C && C->GetTeam() == EBombTeam::Attackers) Pay(C, Weapons::PlantMoney);
 	}
 }
 
@@ -608,9 +891,10 @@ void ABombGameMode::PickupBomb(AFPSCharacter* C)
 {
 	ABombGameState* S = GS();
 	if (!S || !Bomb || Bomb->bPlanted || !C || C->bDead) return;
+	if (C->bIsBot && !bBotsMayTakeBomb) return;        // the bots leave it for you
 	Bomb->Destroy();
 	Bomb = nullptr;
-	C->bHasBomb = true;
+	C->OnBombPickedUp();
 	S->bBombDropped = false;
 	S->BombCarrierName = C->GetPlayerState() ? C->GetPlayerState()->GetPlayerName() : TEXT("?");
 	S->AddFeed(FString::Printf(TEXT("%s picked up the bomb"), *S->BombCarrierName), FLinearColor::Yellow);

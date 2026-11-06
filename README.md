@@ -28,7 +28,7 @@ powershell -ExecutionPolicy Bypass -File tools\ue\build_all.ps1
 That runs, in order:
 
 1. `tools/make_textures.py` – procedural PNG textures → `assets/textures/`; `tools/make_sounds.py` –
-   synthesised sound effects → `assets/sounds/`; `tools/fetch_ortho.py` – the IGN aerial orthophoto for the
+   synthesised sound effects (guns, grenades, shop) → `assets/sounds/`; `tools/fetch_ortho.py` – the IGN aerial orthophoto for the
    **real ground** → `assets/ortho/` (first run only, or with `-FetchData`)
 2. `tools/build_facades.py` – the **real facades**: re-projects the City of Paris street photos
    (Panoramax) onto every street-facing wall → `assets/facades/*.jpg` (≈ 15 min, downloads ≈ 1 GB of
@@ -68,16 +68,29 @@ separate window. Esc stops the session.
 
 | Key | Action |
 |---|---|
-| W A S D / mouse | move / look |
-| Shift | sprint |
-| Ctrl or C | crouch |
-| Left mouse | fire (hitscan rifle, 30-round magazine) |
+| W A S D / mouse | move / look (you run by default) |
+| Shift | walk (slow, quiet, accurate) |
+| Ctrl | crouch |
+| Space | jump |
+| Left mouse | fire (one click = one shot on semi-automatic guns) |
+| Right mouse | zoom with the SR-30 / LR-50; under-hand lob with a grenade out |
 | R | reload |
-| E (hold) | plant the bomb (attacker inside A/B) / defuse (defender next to the bomb) |
+| 1 / 2 / 3 | main gun / sidearm / knife (you run faster with the knife) |
+| 4 (hold) | take the bomb out and plant it inside A / B (attacker); defuse next to it (defender) |
+| Q / E / C | flashbang / smoke / frag out, then left click to throw |
+| 5 | cycle the grenades you carry |
+| F | pick up (or swap for) a dropped gun |
+| B | buy menu, during the buy phase (left click buys, right click sells back) |
 | Tab | scoreboard |
 | M | switch team at the next round |
 
-Rules: 8 s freeze time, 2:30 round, 45 s bomb timer, 4 s plant, 7 s defuse, first to 13 rounds, sides swap after round 12.
+Rules (ported from [FPS Reborn](../fps-reborn), rules only): 20 s buy phase (5 s in round 1) where you can walk
+inside your spawn and shop, 100 s round, 45 s bomb timer, 4 s plant, 7 s defuse, 10 m blast. Money: start $800, round
+win $3 000, loss $1 900 / $2 400 / $2 900 by losing streak, $200 per kill, $300 to every attacker on a plant, cap $9 000;
+survivors keep their guns, the dead restart with the P9. First to 13, win by two, sides swap after round 12 and every round
+in overtime; halftime resets money and loadouts. Eleven guns (5 sidearms, 4 main guns, 2 snipers) + knife, kevlar
+(+25 / +50), smoke / flashbang / frag grenades, dropped guns can be picked up. As an attacker the bomb waits on the ground
+next to you at round start; your bot teammates only take it 10 s after GO, if you leave spawn without it, or if you die.
 
 ## Changing the map
 

@@ -1197,6 +1197,36 @@
     0.3
    ],
    "roughness": 0.9
+  },
+  "M_NadeGreen": {
+   "color": [
+    0.18,
+    0.24,
+    0.14
+   ],
+   "roughness": 0.7
+  },
+  "M_Bomb": {
+   "color": [
+    0.15,
+    0.12,
+    0.1
+   ],
+   "roughness": 0.5,
+   "metallic": 0.3,
+   "emissive": [
+    2.0,
+    0.05,
+    0.02
+   ]
+  },
+  "M_Smoke": {
+   "color": [
+    0.72,
+    0.72,
+    0.7
+   ],
+   "roughness": 1.0
   }
  },
  "meshes": {
@@ -7111,6 +7141,143 @@
     "M_Metal"
    ],
    "tris": 120
+  },
+  "gun_p9": {
+   "file": "meshes/gun_p9.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal"
+   ],
+   "tris": 96
+  },
+  "gun_sp7": {
+   "file": "meshes/gun_sp7.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal"
+   ],
+   "tris": 108
+  },
+  "gun_mp11": {
+   "file": "meshes/gun_mp11.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal"
+   ],
+   "tris": 120
+  },
+  "gun_r44": {
+   "file": "meshes/gun_r44.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal",
+    "M_Wood"
+   ],
+   "tris": 108
+  },
+  "gun_so12": {
+   "file": "meshes/gun_so12.obj",
+   "slots": [
+    "M_Metal",
+    "M_GunBlack",
+    "M_Wood"
+   ],
+   "tris": 84
+  },
+  "gun_smg9": {
+   "file": "meshes/gun_smg9.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal"
+   ],
+   "tris": 132
+  },
+  "gun_ps12": {
+   "file": "meshes/gun_ps12.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal",
+    "M_Wood",
+    "M_Boot"
+   ],
+   "tris": 108
+  },
+  "gun_ar7": {
+   "file": "meshes/gun_ar7.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal"
+   ],
+   "tris": 120
+  },
+  "gun_ar7s": {
+   "file": "meshes/gun_ar7s.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal"
+   ],
+   "tris": 132
+  },
+  "gun_sr30": {
+   "file": "meshes/gun_sr30.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal",
+    "M_Glass",
+    "M_Wood"
+   ],
+   "tris": 144
+  },
+  "gun_lr50": {
+   "file": "meshes/gun_lr50.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal",
+    "M_Glass",
+    "M_Boot"
+   ],
+   "tris": 192
+  },
+  "gun_knife": {
+   "file": "meshes/gun_knife.obj",
+   "slots": [
+    "M_Metal",
+    "M_GunBlack",
+    "M_Wood"
+   ],
+   "tris": 60
+  },
+  "nade_frag": {
+   "file": "meshes/nade_frag.obj",
+   "slots": [
+    "M_NadeGreen",
+    "M_Metal"
+   ],
+   "tris": 20
+  },
+  "nade_smoke": {
+   "file": "meshes/nade_smoke.obj",
+   "slots": [
+    "M_GunBlack",
+    "M_Metal"
+   ],
+   "tris": 20
+  },
+  "nade_flash": {
+   "file": "meshes/nade_flash.obj",
+   "slots": [
+    "M_Metal"
+   ],
+   "tris": 12
+  },
+  "c4": {
+   "file": "meshes/c4.obj",
+   "slots": [
+    "M_Gear",
+    "M_GunBlack",
+    "M_Bomb"
+   ],
+   "tris": 36
   },
   "tree_a": {
    "file": "meshes/tree_a.obj",

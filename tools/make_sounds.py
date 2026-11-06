@@ -119,6 +119,48 @@ crackle = highpass(noise(2.5), 800) * env(n, 0.001, 0.15, 0.1, 0.6)
 rumble = lowpass(noise(2.5), 180) * env(n, 0.02, 1.0, 0.3, 1.2)
 save("S_Explosion", sat(boom * 1.5 + crackle * 0.8 + rumble * 1.2, 2.5))
 
+# ---- weapon roster shots (G1)
+def shot(sec, crack_hz, thump0, thump1, crack_g=1.2, thump_g=1.6, tail_g=0.5, tail_hz=900, k=3.0):
+    n = int(SR * sec)
+    c = highpass(noise(sec), crack_hz) * env(n, 0.0005, sec * 0.07, 0.15, sec * 0.5)
+    th = sweep(thump0, thump1, sec) * env(n, 0.001, sec * 0.18, 0.1, sec * 0.45)
+    ta = lowpass(noise(sec), tail_hz) * env(n, 0.01, sec * 0.45, 0.1, sec * 0.45)
+    return sat(c * crack_g + th * thump_g + ta * tail_g, k)
+save("S_Shot_Pistol", shot(0.28, 2200, 240, 70, 1.4, 1.2, 0.3))
+save("S_Shot_Revolver", shot(0.5, 1200, 160, 40, 1.3, 2.0, 0.7, 700))
+save("S_Shot_SMG", shot(0.2, 2600, 260, 90, 1.3, 1.0, 0.25))
+save("S_Shot_Shotgun", shot(0.6, 900, 120, 35, 1.0, 2.2, 1.0, 600, 3.5))
+save("S_Shot_Sniper", shot(0.9, 1500, 140, 30, 1.6, 2.0, 0.9, 800, 3.5))
+n = int(SR * 0.22)
+save("S_Shot_Silenced", sat(lowpass(noise(0.22), 1400) * env(n, 0.0005, 0.03, 0.1, 0.15) * 1.5 + sweep(300, 120, 0.22) * env(n, 0.001, 0.05, 0, 0.1) * 0.6, 2.0), 0.6)
+
+# ---- knife swish + stab
+n = int(SR * 0.25)
+save("S_Knife", highpass(noise(0.25), 1800) * env(n, 0.03, 0.08, 0.2, 0.1) * np.concatenate([np.linspace(0.2, 1, n // 2), np.linspace(1, 0.1, n - n // 2)]), 0.7)
+
+# ---- grenades: toss, bounce, smoke hiss, flash bang, frag boom
+n = int(SR * 0.12)
+save("S_Toss", lowpass(noise(0.12), 1500) * env(n, 0.005, 0.06, 0.1, 0.05), 0.5)
+n = int(SR * 0.08)
+save("S_Bounce", (sine(1700, 0.08) + highpass(noise(0.08), 3000) * 0.5) * env(n, 0.0005, 0.03, 0, 0.04), 0.5)
+n = int(SR * 2.0)
+save("S_SmokePop", np.concatenate([lowpass(noise(0.1), 800) * env(int(SR * 0.1), 0.001, 0.05, 0.2, 0.04) * 1.5,
+                                    highpass(noise(1.9), 2500) * env(int(SR * 1.9), 0.05, 1.0, 0.3, 0.8) * 0.5]), 0.7)
+n = int(SR * 1.4)
+bang = sat(highpass(noise(1.4), 1000) * env(n, 0.0005, 0.08, 0.05, 0.3) * 2.0 + sweep(400, 60, 1.4) * env(n, 0.001, 0.1, 0, 0.2), 3.0)
+ring = sine(3200, 1.4) * env(n, 0.01, 0.2, 0.5, 1.0) * 0.35
+save("S_FlashBang", bang + ring)
+n = int(SR * 1.6)
+save("S_FragBoom", sat(sweep(120, 30, 1.6) * env(n, 0.002, 0.4, 0.2, 1.0) * 1.5 + highpass(noise(1.6), 600) * env(n, 0.001, 0.12, 0.1, 0.5) + lowpass(noise(1.6), 200) * env(n, 0.02, 0.8, 0.3, 0.7), 2.5))
+
+# ---- shop / money / pickup
+n = int(SR * 0.3)
+save("S_Buy", np.concatenate([click(2200, 0.06), gap(0.02), (sine(1319, 0.25) + sine(2637, 0.25) * 0.4) * env(int(SR * 0.25), 0.002, 0.15, 0.2, 0.08)]), 0.6)
+save("S_Sell", np.concatenate([(sine(988, 0.12) + sine(1976, 0.12) * 0.3) * env(int(SR * 0.12), 0.002, 0.08, 0.2, 0.03), gap(0.02), (sine(740, 0.2)) * env(int(SR * 0.2), 0.002, 0.12, 0.2, 0.06)]), 0.6)
+save("S_Pickup", np.concatenate([click(700, 0.08, False), gap(0.04), click(1500, 0.08)]), 0.6)
+n = int(SR * 0.35)
+save("S_Money", (sine(2093, 0.35) + sine(2637, 0.35) * 0.6 + sine(4186, 0.35) * 0.2) * env(n, 0.002, 0.2, 0.15, 0.1), 0.5)
+
 # ---- round jingles
 def chord(freqs, sec, a=0.01, r=0.3):
     n = int(SR * sec)

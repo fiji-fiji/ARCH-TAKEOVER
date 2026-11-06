@@ -18,11 +18,17 @@ ABombActor::ABombActor()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(Mesh);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
-	if (CubeMesh.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> C4Mesh(TEXT("/Game/Meshes/c4.c4"));
+	if (C4Mesh.Succeeded())
+	{
+		Mesh->SetStaticMesh(C4Mesh.Object);
+		bGeneratedMesh = true;
+	}
+	else if (CubeMesh.Succeeded())
 	{
 		Mesh->SetStaticMesh(CubeMesh.Object);
+		Mesh->SetRelativeScale3D(FVector(0.38f, 0.26f, 0.12f));
 	}
-	Mesh->SetRelativeScale3D(FVector(0.38f, 0.26f, 0.12f));
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Mesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	Mesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
@@ -48,9 +54,12 @@ ABombActor::ABombActor()
 void ABombActor::BeginPlay()
 {
 	Super::BeginPlay();
-	if (UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_Bomb.M_Bomb")))
+	if (!bGeneratedMesh)
 	{
-		Mesh->SetMaterial(0, M);
+		if (UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_Bomb.M_Bomb")))
+		{
+			Mesh->SetMaterial(0, M);
+		}
 	}
 	Pickup->OnComponentBeginOverlap.AddDynamic(this, &ABombActor::OnPickupOverlap);
 	// the scale on the root affects children: undo it on the sphere so the pickup radius is in world units

@@ -1,0 +1,6 @@
+newmtl M_GunBlack
+Kd 0.8 0.8 0.8
+newmtl M_Metal
+Kd 0.8 0.8 0.8
+newmtl M_Wood
+Kd 0.8 0.8 0.8

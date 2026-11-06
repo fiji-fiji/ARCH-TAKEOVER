@@ -14,15 +14,27 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Team")
 	EBombTeam Team = EBombTeam::None;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Score")
-	int32 Kills = 0;
+	UPROPERTY(BlueprintReadOnly, Category = "Score") int32 Kills = 0;
+	UPROPERTY(BlueprintReadOnly, Category = "Score") int32 Deaths = 0;
+	UPROPERTY(BlueprintReadOnly, Category = "Score") int32 Plants = 0;
+	UPROPERTY(BlueprintReadOnly, Category = "Score") int32 Defuses = 0;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Score")
-	int32 Deaths = 0;
+	// ---- economy (FPS Reborn rules)
+	UPROPERTY(BlueprintReadOnly, Category = "Economy") int32 Money = 800;
+	/** Alive at the end of the last round: keeps the loadout. */
+	bool bSurvived = false;
+	/** Things bought this buy phase (refunded in full when replaced / sold back). */
+	FName RoundBuyMain, RoundBuySide, RoundBuyArmor;
+	int32 PrevArmor = 0;
+	TMap<FName, int32> RoundBuyNades;
+	/** HUD: the last money gain and when it happened. */
+	int32 LastGain = 0;
+	float LastGainTime = -100.f;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Score")
-	int32 Plants = 0;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Score")
-	int32 Defuses = 0;
+	void ClearRoundBuys()
+	{
+		RoundBuyMain = RoundBuySide = RoundBuyArmor = NAME_None;
+		PrevArmor = 0;
+		RoundBuyNades.Empty();
+	}
 };

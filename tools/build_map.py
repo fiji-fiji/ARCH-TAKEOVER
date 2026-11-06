@@ -758,6 +758,187 @@ MATERIALS["M_Uniform"] = {"color": [0.35, 0.36, 0.30], "roughness": 0.9}
 for name, fn in (("soldier", make_soldier), ("rifle", make_rifle)):
     meshes[name] = fn(name).write()
 
+
+# ======================================================================= weapon roster models (G11)
+# Every gun: +x forward, origin at the top of the grip, metres; realistic silhouettes built from boxes.
+def _sights(mw, rear_x, front_x, z=0.035):
+    mw.box("M_GunBlack", (rear_x, 0), (0.03, 0.03, 0.025), z)
+    mw.box("M_GunBlack", (front_x, 0), (0.015, 0.01, 0.03), z - 0.01)
+
+
+def make_pistol(name, suppressor=False, long_mag=False):
+    mw = MeshWriter(name)
+    mw.box("M_GunBlack", (0.06, 0), (0.21, 0.028, 0.034), 0.0)                 # slide
+    mw.box("M_GunBlack", (0.05, 0), (0.17, 0.026, 0.03), -0.03)                # frame
+    mw.box("M_Metal", (0.17, 0), (0.03, 0.012, 0.012), 0.008)                  # muzzle
+    mw.box("M_GunBlack", (-0.03, 0), (0.036, 0.03, 0.12), -0.15)               # grip
+    mw.box("M_GunBlack", (0.015, 0), (0.045, 0.01, 0.012), -0.048)             # trigger guard
+    mw.box("M_Metal", (0.0, 0), (0.008, 0.006, 0.02), -0.04)                   # trigger
+    if long_mag:
+        mw.box("M_GunBlack", (-0.03, 0), (0.028, 0.024, 0.12), -0.27)          # extended magazine
+    if suppressor:
+        mw.box("M_Metal", (0.26, 0), (0.15, 0.03, 0.03), -0.005)               # suppressor can
+    _sights(mw, -0.02, 0.15, 0.034)
+    return mw
+
+
+def make_machine_pistol(name):
+    mw = MeshWriter(name)
+    mw.box("M_GunBlack", (0.07, 0), (0.26, 0.042, 0.06), -0.03)                # boxy receiver
+    mw.box("M_GunBlack", (-0.03, 0), (0.036, 0.032, 0.11), -0.14)              # grip
+    mw.box("M_GunBlack", (-0.03, 0), (0.03, 0.026, 0.16), -0.30)               # long magazine
+    mw.box("M_Metal", (0.23, 0), (0.07, 0.018, 0.018), 0.0)                    # barrel
+    mw.box("M_Metal", (0.27, 0), (0.025, 0.026, 0.026), -0.004)                # threaded tip
+    mw.box("M_Metal", (-0.22, 0), (0.18, 0.012, 0.012), 0.0)                   # wire stock
+    mw.box("M_Metal", (-0.30, 0), (0.012, 0.04, 0.06), -0.04)                  # stock plate
+    mw.box("M_GunBlack", (0.10, 0), (0.05, 0.01, 0.012), -0.05)                # trigger guard
+    _sights(mw, -0.04, 0.18, 0.03)
+    return mw
+
+
+def make_revolver(name):
+    mw = MeshWriter(name)
+    mw.box("M_GunBlack", (0.02, 0), (0.13, 0.03, 0.04), -0.02)                 # frame
+    mw.box("M_Metal", (0.02, 0), (0.045, 0.04, 0.045), -0.022)                 # cylinder
+    mw.box("M_Metal", (0.16, 0), (0.17, 0.02, 0.026), 0.0)                     # barrel
+    mw.box("M_Metal", (0.16, 0), (0.17, 0.014, 0.012), -0.012)                 # under-lug
+    mw.box("M_Wood", (-0.035, 0), (0.035, 0.03, 0.11), -0.13)                  # wooden grip
+    mw.box("M_GunBlack", (0.0, 0), (0.045, 0.01, 0.012), -0.045)               # trigger guard
+    mw.box("M_Metal", (-0.05, 0), (0.012, 0.01, 0.03), 0.01)                   # hammer
+    _sights(mw, -0.02, 0.23, 0.026)
+    return mw
+
+
+def make_sawn_off(name):
+    mw = MeshWriter(name)
+    for sy in (-0.013, 0.013):
+        mw.box("M_Metal", (0.20, sy), (0.30, 0.022, 0.022), 0.0)               # twin barrels
+    mw.box("M_GunBlack", (0.0, 0), (0.13, 0.05, 0.055), -0.03)                 # receiver
+    mw.box("M_Wood", (-0.04, 0), (0.04, 0.034, 0.12), -0.15)                   # pistol grip
+    mw.box("M_Wood", (0.17, 0), (0.12, 0.05, 0.03), -0.04)                     # fore-end
+    mw.box("M_GunBlack", (-0.01, 0), (0.045, 0.01, 0.012), -0.05)              # trigger guard
+    mw.box("M_Metal", (0.34, 0), (0.012, 0.01, 0.02), 0.022)                   # bead
+    return mw
+
+
+def make_smg(name):
+    mw = MeshWriter(name)
+    mw.box("M_GunBlack", (0.10, 0), (0.32, 0.045, 0.06), -0.03)                # receiver
+    mw.box("M_GunBlack", (0.24, 0), (0.12, 0.05, 0.055), -0.035)               # front shroud
+    mw.box("M_GunBlack", (0.09, 0), (0.035, 0.03, 0.18), -0.21)                # magazine (in front of the grip)
+    mw.box("M_GunBlack", (-0.04, 0), (0.04, 0.034, 0.12), -0.15)               # grip
+    mw.box("M_Metal", (0.33, 0), (0.08, 0.02, 0.02), -0.004)                   # barrel
+    mw.box("M_Metal", (-0.26, 0), (0.22, 0.016, 0.016), 0.0)                   # folding stock bars
+    mw.box("M_Metal", (-0.37, 0), (0.014, 0.04, 0.08), -0.05)                  # butt
+    mw.box("M_GunBlack", (0.02, 0), (0.05, 0.01, 0.012), -0.05)                # trigger guard
+    mw.box("M_Metal", (0.10, 0), (0.16, 0.03, 0.02), 0.03)                     # top rail
+    _sights(mw, -0.05, 0.27, 0.03)
+    return mw
+
+
+def make_pump_shotgun(name):
+    mw = MeshWriter(name)
+    mw.box("M_GunBlack", (0.05, 0), (0.24, 0.045, 0.06), -0.03)                # receiver
+    mw.box("M_Metal", (0.45, 0), (0.52, 0.022, 0.022), 0.012)                  # barrel
+    mw.box("M_Metal", (0.40, 0), (0.44, 0.02, 0.02), -0.016)                   # tube magazine
+    mw.box("M_Wood", (0.33, 0), (0.14, 0.042, 0.042), -0.03)                   # pump
+    mw.box("M_Wood", (-0.24, 0), (0.30, 0.04, 0.06), -0.04)                    # stock
+    mw.box("M_Wood", (-0.07, 0), (0.05, 0.036, 0.09), -0.11)                   # grip part of the stock
+    mw.box("M_Boot", (-0.40, 0), (0.025, 0.045, 0.09), -0.06)                  # rubber butt pad
+    mw.box("M_GunBlack", (0.0, 0), (0.05, 0.01, 0.012), -0.05)                 # trigger guard
+    mw.box("M_Metal", (0.70, 0), (0.012, 0.01, 0.02), 0.03)                    # bead
+    return mw
+
+
+def make_scout(name):
+    mw = MeshWriter(name)
+    mw.box("M_GunBlack", (0.08, 0), (0.30, 0.04, 0.05), -0.025)                # receiver
+    mw.box("M_Metal", (0.56, 0), (0.58, 0.018, 0.018), 0.0)                    # barrel
+    mw.box("M_GunBlack", (0.08, 0), (0.20, 0.03, 0.03), 0.055)                 # scope tube
+    mw.box("M_Glass", (0.19, 0), (0.01, 0.034, 0.034), 0.053)                  # objective lens
+    for x in (0.02, 0.14):
+        mw.box("M_GunBlack", (x, 0), (0.02, 0.02, 0.035), 0.025)               # scope rings
+    mw.box("M_GunBlack", (0.05, 0), (0.07, 0.03, 0.07), -0.095)                # magazine
+    mw.box("M_Wood", (-0.28, 0), (0.30, 0.04, 0.06), -0.05)                    # stock
+    mw.box("M_Wood", (-0.08, 0), (0.06, 0.036, 0.10), -0.12)                   # grip
+    mw.box("M_Wood", (0.30, 0), (0.22, 0.04, 0.035), -0.04)                    # fore-end
+    mw.box("M_Metal", (-0.02, 0.04), (0.03, 0.05, 0.015), 0.015)               # bolt handle
+    mw.box("M_GunBlack", (-0.01, 0), (0.05, 0.01, 0.012), -0.05)               # trigger guard
+    return mw
+
+
+def make_long_rifle(name):
+    mw = MeshWriter(name)
+    mw.box("M_GunBlack", (0.10, 0), (0.38, 0.05, 0.07), -0.035)                # receiver / chassis
+    mw.box("M_Metal", (0.72, 0), (0.52, 0.026, 0.026), -0.002)                 # heavy barrel
+    mw.box("M_Metal", (0.99, 0), (0.06, 0.036, 0.036), -0.007)                 # muzzle brake
+    mw.box("M_GunBlack", (0.12, 0), (0.28, 0.04, 0.04), 0.06)                  # big scope
+    mw.box("M_Glass", (0.26, 0), (0.012, 0.046, 0.046), 0.057)                 # objective
+    for x in (0.03, 0.19):
+        mw.box("M_GunBlack", (x, 0), (0.025, 0.025, 0.04), 0.03)               # rings
+    mw.box("M_GunBlack", (0.06, 0), (0.08, 0.035, 0.09), -0.125)               # magazine
+    mw.box("M_GunBlack", (-0.06, 0), (0.045, 0.034, 0.12), -0.15)              # pistol grip
+    mw.box("M_GunBlack", (-0.32, 0), (0.34, 0.045, 0.08), -0.06)               # skeleton stock
+    mw.box("M_GunBlack", (-0.30, 0), (0.14, 0.045, 0.03), 0.02)                # cheek rest
+    mw.box("M_Boot", (-0.50, 0), (0.025, 0.05, 0.11), -0.075)                  # butt pad
+    for sy in (-0.03, 0.03):
+        mw.box("M_Metal", (0.55, sy), (0.14, 0.01, 0.01), -0.035)              # folded bipod
+    mw.box("M_Metal", (0.0, 0.045), (0.03, 0.05, 0.015), 0.01)                 # bolt handle
+    mw.box("M_GunBlack", (-0.02, 0), (0.05, 0.01, 0.012), -0.055)              # trigger guard
+    return mw
+
+
+def make_knife(name):
+    mw = MeshWriter(name)
+    mw.box("M_Metal", (0.11, 0), (0.17, 0.004, 0.032), -0.016)                 # blade
+    mw.box("M_Metal", (0.195, 0), (0.03, 0.004, 0.02), -0.01)                  # tip (narrower)
+    mw.box("M_GunBlack", (0.02, 0), (0.015, 0.02, 0.05), -0.025)               # guard
+    mw.box("M_Wood", (-0.05, 0), (0.12, 0.022, 0.034), -0.017)                 # handle
+    mw.box("M_GunBlack", (-0.115, 0), (0.012, 0.024, 0.036), -0.018)           # pommel
+    return mw
+
+
+def make_grenade(name, kind):
+    mw = MeshWriter(name)
+    if kind == "frag":
+        mw.cylinder("M_NadeGreen", (0, 0), 0.032, 0.0, 0.085, segs=10)         # body
+        mw.cylinder("M_Metal", (0, 0), 0.014, 0.085, 0.11, segs=8)              # fuse head
+        mw.box("M_Metal", (0.02, 0), (0.06, 0.008, 0.006), 0.10)                # lever
+    elif kind == "smoke":
+        mw.cylinder("M_Metal", (0, 0), 0.03, 0.0, 0.13, segs=10)                # can
+        mw.cylinder("M_GunBlack", (0, 0), 0.031, 0.10, 0.13, segs=10)           # top band
+        mw.box("M_Metal", (0.015, 0), (0.05, 0.008, 0.006), 0.125)              # lever
+    else:
+        mw.cylinder("M_Metal", (0, 0), 0.024, 0.0, 0.11, segs=10)               # flashbang tube
+        for z in (0.02, 0.06):
+            mw.cylinder("M_GunBlack", (0, 0), 0.025, z, z + 0.015, segs=10)     # stripes
+        mw.box("M_Metal", (0.012, 0), (0.045, 0.008, 0.006), 0.105)             # lever
+    return mw
+
+
+def make_c4(name):
+    mw = MeshWriter(name)
+    mw.box("M_Gear", (0, 0), (0.26, 0.18, 0.07), 0.0)                           # charge
+    mw.box("M_GunBlack", (0, 0), (0.14, 0.08, 0.02), 0.07)                      # detonator panel
+    mw.box("M_Bomb", (0.05, 0.025), (0.015, 0.015, 0.01), 0.09)                 # red light
+    return mw
+
+
+MATERIALS["M_NadeGreen"] = {"color": [0.18, 0.24, 0.14], "roughness": 0.7}
+MATERIALS["M_Bomb"] = {"color": [0.15, 0.12, 0.10], "roughness": 0.5, "metallic": 0.3, "emissive": [2.0, 0.05, 0.02]}
+MATERIALS["M_Smoke"] = {"color": [0.72, 0.72, 0.70], "roughness": 1.0}
+WEAPON_MESHES = {
+    "gun_p9": lambda n: make_pistol(n), "gun_sp7": lambda n: make_pistol(n, suppressor=True),
+    "gun_mp11": make_machine_pistol, "gun_r44": make_revolver, "gun_so12": make_sawn_off,
+    "gun_smg9": make_smg, "gun_ps12": make_pump_shotgun, "gun_ar7": make_rifle,
+    "gun_ar7s": lambda n: (lambda mw: (mw.box("M_Metal", (0.93, 0), (0.18, 0.035, 0.035), -0.017), mw)[1])(make_rifle(n)),
+    "gun_sr30": make_scout, "gun_lr50": make_long_rifle, "gun_knife": make_knife,
+    "nade_frag": lambda n: make_grenade(n, "frag"), "nade_smoke": lambda n: make_grenade(n, "smoke"),
+    "nade_flash": lambda n: make_grenade(n, "flash"), "c4": make_c4,
+}
+for name, fn in WEAPON_MESHES.items():
+    meshes[name] = fn(name).write()
+
 PROP_BUILDERS = {
     "tree_a": lambda n: make_tree(n, 3.2, 2.6),
     "tree_b": lambda n: make_tree(n, 4.0, 3.4),

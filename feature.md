@@ -41,17 +41,17 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | U11| Sound: synthesised rifle, reload, footsteps, hit, plant / defuse beeps, bomb timer, explosion, round jingles | ✅ built — 18 WAVs imported, no missing-sound warnings in a run; to hear in a playtest |
 | U12| No depth of field (FPS readability), dev switch `-pbm_lookmate` aims the auto-screenshot at a teammate | ✅ done |
 | U13| HUD readability: every text sized in pixels of a 1080p screen (22–64 px), callout labels face the player | ✅ verified (`data/screenshot_hud.png`) |
-| G1 | Weapon roster ported from FPS Reborn (rules only): 5 sidearms, 4 main guns, 2 snipers, knife — fire rate, magazine, reload, head / body / legs damage, fall-off, spread model, recoil pattern, silencer, scope | 🟡 planned |
-| G2 | Buy menu (B in the buy phase): cards per slot, mouse buy, right-click sell back, money / next-round minimum / countdown | 🟡 planned |
-| G3 | Economy: start 800, round win 3 000, loss 1 900 / 2 400 / 2 900 by streak, kill 200, plant 300, cap 9 000; survivors keep their guns, halftime reset | 🟡 planned |
-| G4 | Round flow as in FPS Reborn: 20 s buy phase (5 s in round 1) walking inside the spawn fence, 100 s round, 5 s result, first to 13 win-by-two, halftime after 12, overtime swaps every round, a plant in progress may finish at 0:00 | 🟡 planned |
-| G5 | Kevlar: light +25 / heavy +50 armour soaks damage first | 🟡 planned |
-| G6 | Grenades: smoke (15 s cloud), flash (blinds enemies looking at it), frag (6 m blast); 2 / 2 / 1 per round; Q / E / C quick-throw, 5 cycles | 🟡 planned |
-| G7 | Dropped guns: the main gun falls when you die, F picks it up or swaps, bots grab drops when unarmed; cleared each round | 🟡 planned |
-| G8 | Bomb carry: 4 selects the bomb; as an attacker it waits on the ground next to you at round start, bot teammates only take it after 10 s / when you leave spawn / when you die; hold 4 to plant / defuse | 🟡 planned |
-| G9 | Bots buy with the FPS Reborn logic (save when poor, rifles + kevlar when rich, pistol-round sidearms), use smokes / flashes on site hits and frags on seen enemies | 🟡 planned |
-| G10| HUD extensions: money + gain popup, weapon name and slot, armour, grenade pips, scoreboard money, kill feed with weapon | 🟡 planned |
-| G11| Generated gun models for the roster (realistic silhouettes, no flowers): pistols, revolver, machine pistol, sawn-off, SMG, pump shotgun, rifles, scout, long rifle, knife, three grenades | 🟡 planned |
+| G1 | Weapon roster ported from FPS Reborn (rules only): 5 sidearms, 4 main guns, 2 snipers, knife — fire rate, magazine, reload, head / body / legs damage, fall-off, spread model, recoil pattern, silencer, scope | ✅ built — all 11 guns + knife in game, bots buy and hold them (run log) |
+| G2 | Buy menu (B in the buy phase): cards per slot, mouse buy, right-click sell back, money / next-round minimum / countdown | ✅ verified (`data/screenshot_shop.png`) |
+| G3 | Economy: start 800, round win 3 000, loss 1 900 / 2 400 / 2 900 by streak, kill 200, plant 300, cap 9 000; survivors keep their guns, halftime reset | ✅ verified (run log: $800 → $2 700 after a lost round, winners $3 800 → rifles + kevlar) |
+| G4 | Round flow as in FPS Reborn: 20 s buy phase (5 s in round 1) walking inside the spawn fence, 100 s round, 5 s result, first to 13 win-by-two, halftime after 12, overtime swaps every round, a plant in progress may finish at 0:00 | 🟡 built — buy phase, spawn fence, 100 s rounds seen; win-by-two / overtime not yet reached in a run |
+| G5 | Kevlar: light +25 / heavy +50 armour soaks damage first | ✅ built (bots show kevlar 25 / 50 in the run log) |
+| G6 | Grenades: smoke (15 s cloud), flash (blinds enemies looking at it), frag (6 m blast); 2 / 2 / 1 per round; Q / E / C quick-throw, 5 cycles | 🟡 built — bots carry smokes / flashes / frags; detonations not yet observed in a run |
+| G7 | Dropped guns: the main gun falls when you die, F picks it up or swaps, bots grab drops when unarmed; cleared each round | 🟡 built — not yet observed in a run |
+| G8 | Bomb carry: 4 selects the bomb; as an attacker it waits on the ground next to you at round start, bot teammates only take it after 10 s / when you leave spawn / when you die; hold 4 to plant / defuse | 🟡 built — bot carrier verified; the human hand-off needs a playtest as attacker (M) |
+| G9 | Bots buy with the FPS Reborn logic (save when poor, rifles + kevlar when rich, pistol-round sidearms), use smokes / flashes on site hits and frags on seen enemies | ✅ verified (run log: pistol-round sidearms, kevlar, rifles in round 2, grenades) |
+| G10| HUD extensions: money + gain popup, weapon name and slot, armour, grenade pips, scoreboard money, kill feed with weapon | ✅ verified (`data/screenshot_live.png`, `data/screenshot_round2.png`) |
+| G11| Generated gun models for the roster (realistic silhouettes, no flowers): pistols, revolver, machine pistol, sawn-off, SMG, pump shotgun, rifles, scout, long rifle, knife, three grenades | ✅ built — 16 meshes imported; the P9 is visible in first person |
 | A1 | Parisian building Blender asset (user-supplied 3-piece Haussmann block) imported with its textures, split into pieces | 🟡 planned |
 | A2 | War-zone dressing: ruined blocks from A1, rubble, sandbags, barricades, burnt cars, craters, smoke columns, overcast haze — the photo facades stay so the streets remain recognisable | 🟡 planned |
 | —  | Online play (replication)                                            | ❌ out of scope for now |
@@ -346,7 +346,7 @@ distance-field font (crisp at any scale); panels widened to match. World callout
 **Verified:** `data/screenshot_hud.png` (freeze time of round 1). The world callout labels (`ACalloutMarker`) now turn
 towards the camera every 0.1 s so they are never mirrored, and the HUD callout moves above the key bar during freeze.
 
-## G1–G11. Game rules ported from FPS Reborn — 🟡 planned
+## G1–G11. Game rules ported from FPS Reborn — ✅ built (G4 / G6 / G7 / G8 to playtest)
 **Source:** `_CODE/fps-reborn` (`js/modes.js`, `weapons.js`, `grenades.js`, `drops.js`, `shop.js`, `game.js`).
 Only the rules are taken; none of the art direction (no flowers, no bubbles, no cats): the guns are made-up
 realistic firearms.
@@ -394,6 +394,11 @@ knife / nade / bomb, kevlar, money moved to `ABombPlayerState`), `AGrenadeActor`
 by `ABombHUD` with hit boxes, economy + flow in `ABombGameMode`, bot buying / nade use in `ABotController`.
 **Test:** B in the buy phase shows the menu; buying an AR-7 changes the 1P model and ammo; a kill shows +200;
 losing three rounds in a row pays 2 900; a dropped gun can be picked up with F; a flash whites the screen.
+**Verified 2026-11-06:** `play.ps1 -AutoShot 8 -Extra -pbm_openshop` → `data/screenshot_shop.png` (the menu, $800, "next round
+at least $2 700", countdown); `-AutoShot 70` / `-AutoShot 165` run logs: round 1 bots bought MP-11 / R-44 / SP-7 + kevlar + smokes,
+round 2 (attackers won) bots hold AR-7 / AR-7S / SMG-9 / PS-12 / SR-30 with kevlar 25–50 and 1–3 grenades, the human has $2 700
+after the lost round. Gotcha: the bots' `BuyPhase()` must run after the phase is set to Freeze (the shop is closed otherwise).
+Dev switch `-pbm_openshop` opens the buy menu 1.5 s before the auto screenshot.
 
 ## A1. Parisian building asset — 🟡 planned
 **What:** the user-supplied *3 Piece Parisian Apartment Building* (Blender / FBX / OBJ, 625 k vertices, 46 m ×

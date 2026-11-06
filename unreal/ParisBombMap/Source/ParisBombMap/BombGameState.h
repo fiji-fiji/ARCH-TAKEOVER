@@ -22,6 +22,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Match") FString RoundResultText;
 	UPROPERTY(BlueprintReadOnly, Category = "Match") FString MatchResultText;
 	UPROPERTY(BlueprintReadOnly, Category = "Match") EBombTeam HumanTeam = EBombTeam::Defenders;
+	UPROPERTY(BlueprintReadOnly, Category = "Match") bool bOvertime = false;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Bomb") bool bBombPlanted = false;
 	UPROPERTY(BlueprintReadOnly, Category = "Bomb") bool bBombDropped = false;

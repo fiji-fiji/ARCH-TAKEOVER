@@ -2,12 +2,16 @@
 #include "FPSCharacter.h"
 #include "BombGameMode.h"
 #include "BombGameState.h"
+#include "BombPlayerState.h"
 #include "BombSite.h"
 #include "BombActor.h"
 #include "CalloutMarker.h"
+#include "WeaponPickup.h"
+#include "Weapons.h"
 #include "NavigationSystem.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "EngineUtils.h"
 #include "Engine/World.h"
 #include "ParisBombMap.h"
 
@@ -18,6 +22,7 @@ ABotController::ABotController()
 	bSetControlRotationFromPawnOrientation = false;
 	Rng.Initialize(FMath::Rand());
 	Skill = Rng.FRandRange(0.35f, 0.85f);
+	bCunning = Rng.FRand() < 0.4f;
 }
 
 void ABotController::OnPossess(APawn* InPawn)
@@ -37,11 +42,86 @@ void ABotController::OnRoundStart()
 	Task = EBotTask::Idle;
 	Enemy = nullptr;
 	TargetSite = nullptr;
+	TargetDrop = nullptr;
 	bWentViaWaypoint = false;
+	bSiteNadesThrown = false;
 	EnemySeenSince = -1.f;
 	StopMovement();
 	ClearFocus(EAIFocusPriority::Gameplay);
 }
+
+// ---------------------------------------------------------------- buying (FPS Reborn modes.js _botsBuy)
+
+namespace
+{
+	FName WeightedPick(const TArray<TPair<FName, float>>& Opts, FRandomStream& Rng)
+	{
+		float Total = 0.f;
+		for (const auto& O : Opts) Total += O.Value;
+		float R = Rng.FRand() * Total;
+		for (const auto& O : Opts) { R -= O.Value; if (R <= 0.f) return O.Key; }
+		return Opts.Last().Key;
+	}
+}
+
+void ABotController::BuyPhase()
+{
+	AFPSCharacter* B = Me();
+	ABombGameMode* G = GM();
+	ABombPlayerState* PS = B ? B->GetPlayerState<ABombPlayerState>() : nullptr;
+	if (!B || !G || !PS || B->bDead) return;
+	const bool bPistolRound = G->IsPistolRound();
+	auto Money = [PS]() { return PS->Money; };
+
+	if (!B->HasMain() && !bPistolRound)
+	{
+		const int32 M = Money();
+		TArray<TPair<FName, float>> Opts;
+		if (M >= 5500) Opts.Emplace(TEXT("lr50"), 1.f);
+		if (M >= 3300) { Opts.Emplace(TEXT("ar7"), 4.f); Opts.Emplace(TEXT("ar7s"), 2.f); }
+		if (M >= 1800) Opts.Emplace(TEXT("ps12"), 1.f);
+		if (M >= 1500) Opts.Emplace(TEXT("sr30"), M < 3300 ? 1.f : 0.3f);
+		if (M >= 900) Opts.Emplace(TEXT("smg9"), M < 2900 ? 2.f : 0.5f);
+		const bool bSaving = M < 2000 && Rng.FRand() < 0.5f;
+		if (Opts.Num() && !bSaving) G->Buy(B, WeightedPick(Opts, Rng));
+		else if (bSaving && M >= 650 && Rng.FRand() < 0.3f) G->Buy(B, TEXT("so12"));     // a cheap sawn-off while saving
+	}
+	if (B->Guns[1].IsValid() && B->Guns[1].Def->Key == TEXT("p9"))
+	{
+		const int32 M = Money();
+		TArray<TPair<FName, float>> Opts;
+		if (bPistolRound && Rng.FRand() < 0.7f)
+		{
+			if (M >= 800) Opts.Emplace(TEXT("r44"), 1.f);
+			if (M >= 500) Opts.Emplace(TEXT("sp7"), 2.f);
+			if (M >= 400) Opts.Emplace(TEXT("mp11"), 1.5f);
+		}
+		else if (!bPistolRound && M >= 4500) { Opts.Emplace(TEXT("r44"), 1.f); Opts.Emplace(TEXT("sp7"), 1.f); }
+		if (Opts.Num()) G->Buy(B, WeightedPick(Opts, Rng));
+	}
+	if (B->Armor < 50 && Money() >= 1000 && !bPistolRound) G->Buy(B, TEXT("heavy"));
+	else if (B->Armor < 25 && Money() >= 400) G->Buy(B, TEXT("light"));
+	// grenades: attackers like smokes + flashes to take a site, anyone may grab a frag
+	const bool bAttack = B->GetTeam() == EBombTeam::Attackers;
+	if (bAttack)
+	{
+		if (Money() >= 200 && Rng.FRand() < 0.8f) G->Buy(B, TEXT("smoke"));
+		if (Money() >= 250 && Rng.FRand() < (bCunning ? 0.9f : 0.5f)) G->Buy(B, TEXT("flash"));
+	}
+	else if (bCunning && Money() >= 250 && Rng.FRand() < 0.7f) G->Buy(B, TEXT("flash"));
+	if (Money() >= 400 && Rng.FRand() < 0.35f) G->Buy(B, TEXT("frag"));
+	ChooseWeapon();
+}
+
+void ABotController::ChooseWeapon()
+{
+	AFPSCharacter* M = Me();
+	if (!M || M->bDead) return;
+	const EHeldSlot Want = M->HasMain() ? EHeldSlot::Main : EHeldSlot::Side;
+	if (M->Held != Want) M->SwitchTo(Want);
+}
+
+// ---------------------------------------------------------------- movement helpers
 
 void ABotController::GoTo(const FVector& Loc, float Accept)
 {
@@ -76,6 +156,20 @@ FVector ABotController::RandomNavPointNear(const FVector& Origin, float Radius) 
 	return Origin;
 }
 
+AWeaponPickup* ABotController::NearestDrop(float MaxDist) const
+{
+	const AFPSCharacter* M = Me();
+	if (!M) return nullptr;
+	AWeaponPickup* Best = nullptr; float BestD = MaxDist;
+	for (TActorIterator<AWeaponPickup> It(GetWorld()); It; ++It)
+	{
+		if (!It->Gun.IsValid()) continue;
+		const float D = FVector::Dist(It->GetActorLocation(), M->GetActorLocation());
+		if (D < BestD) { BestD = D; Best = *It; }
+	}
+	return Best;
+}
+
 void ABotController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
 	Super::OnMoveCompleted(RequestID, Result);
@@ -84,12 +178,17 @@ void ABotController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowin
 		Task = EBotTask::Hold;
 		HoldUntil = GetWorld()->GetTimeSeconds() + Rng.FRandRange(6.f, 18.f);
 	}
+	else if (Task == EBotTask::Fetch)
+	{
+		Task = EBotTask::Idle;
+	}
 }
 
 bool ABotController::CanSee(const AFPSCharacter* Other) const
 {
 	const AFPSCharacter* M = Me();
 	if (!M || !Other) return false;
+	if (GetWorld()->GetTimeSeconds() < M->BlindUntil) return false;      // flashed
 	const FVector Eye = M->GetEyeLocation();
 	const FVector To = Other->GetEyeLocation() - Eye;
 	const float Dist = To.Size();
@@ -134,15 +233,26 @@ void ABotController::ChooseObjective()
 	if (!M || !G || !GS) return;
 	const EBombTeam Team = M->GetTeam();
 
+	// no main gun: grab a dropped one if it is close
+	if (!M->HasMain())
+	{
+		if (AWeaponPickup* Drop = NearestDrop(Weapons::DropBotRange * 100.f))
+		{
+			TargetDrop = Drop;
+			GoTo(Drop->GetActorLocation(), 60.f);
+			Task = EBotTask::Fetch;
+			return;
+		}
+	}
+
 	if (Team == EBombTeam::Attackers)
 	{
 		if (GS->bBombPlanted && G->Bomb)
 		{
-			// guard the bomb from a spot nearby
 			GoTo(RandomNavPointNear(G->Bomb->GetActorLocation(), 900.f));
 			return;
 		}
-		if (GS->bBombDropped && G->Bomb && !M->bHasBomb)
+		if (GS->bBombDropped && G->Bomb && !M->bHasBomb && G->bBotsMayTakeBomb)
 		{
 			GoTo(G->Bomb->GetActorLocation(), 60.f);
 			return;
@@ -152,7 +262,6 @@ void ABotController::ChooseObjective()
 		TargetSite = Site;
 		if (!bWentViaWaypoint && G->Callouts.Num() > 0 && Rng.FRand() < 0.6f)
 		{
-			// take a detour through a random callout on the way (spreads the bots over the lanes)
 			const ACalloutMarker* Via = G->Callouts[Rng.RandRange(0, G->Callouts.Num() - 1)];
 			bWentViaWaypoint = true;
 			GoTo(RandomNavPointNear(Via->GetActorLocation(), 400.f), 200.f);
@@ -178,7 +287,6 @@ void ABotController::ChooseObjective()
 		ABombSite* Site = TargetSite.Get();
 		if (!Site && G->Sites.Num() > 0)
 		{
-			// assign by player-state index so the sites get a 3 / 2 split
 			const int32 Idx = G->Characters.IndexOfByKey(M);
 			Site = G->Sites[(Idx % 5 < 3) ? 0 : 1 % G->Sites.Num()];
 			if (Rng.FRand() < 0.25f)
@@ -214,12 +322,14 @@ void ABotController::Think()
 		}
 		return;
 	}
+	if (M->Held == EHeldSlot::Nade || M->Held == EHeldSlot::Knife) ChooseWeapon();
 
 	// ---- combat has priority
 	AFPSCharacter* Seen = FindVisibleEnemy();
 	if (Seen)
 	{
-		if (Enemy.Get() != Seen)
+		const bool bNew = Enemy.Get() != Seen;
+		if (bNew)
 		{
 			Enemy = Seen;
 			EnemySeenSince = Now;
@@ -233,21 +343,29 @@ void ABotController::Think()
 			Task = EBotTask::Engage;
 			NextStrafeAt = Now;
 		}
+		const float DistM = FVector::Dist(Seen->GetActorLocation(), M->GetActorLocation()) / 100.f;
+		// a frag at a fresh target 5-25 m away
+		if (bNew && DistM > 5.f && DistM < 25.f && Now - LastNadeTime > 4.f && Rng.FRand() < 0.6f && M->NadeCount(TEXT("frag")) > 0)
+		{
+			if (M->ThrowNadeTo(TEXT("frag"), Seen->GetActorLocation() + FVector(0, 0, 30.f))) LastNadeTime = Now;
+		}
 		// aim at the chest with skill-based error
 		const float Err = FMath::Lerp(60.f, 6.f, Skill);
 		const FVector AimPt = Seen->GetActorLocation() + FVector(0.f, 0.f, 35.f) + FVector(Rng.FRandRange(-Err, Err), Rng.FRandRange(-Err, Err), Rng.FRandRange(-Err, Err));
 		SetFocalPoint(AimPt, EAIFocusPriority::Gameplay);
-		// bursts
+		const FWeaponDef* D = M->HeldDef();
+		const bool bSniper = D && D->HasScope();
 		if (Now >= NextBurstAt && Now >= BurstEndAt)
 		{
-			BurstEndAt = Now + Rng.FRandRange(0.25f, 0.6f);
-			NextBurstAt = BurstEndAt + Rng.FRandRange(0.15f, 0.45f);
+			BurstEndAt = Now + (bSniper ? 0.2f : Rng.FRandRange(0.25f, 0.6f));
+			NextBurstAt = BurstEndAt + (bSniper ? Rng.FRandRange(0.6f, 1.1f) : Rng.FRandRange(0.15f, 0.45f));
 		}
 		const bool bShoot = Now < BurstEndAt && Now >= EnemySeenSince + FMath::Lerp(0.5f, 0.12f, Skill);
 		if (bShoot) M->StartFire(); else M->StopFire();
-		if (M->AmmoInMag == 0) M->Reload();
-		// strafe a little
-		if (Now >= NextStrafeAt)
+		FGunState* Gun = M->HeldGun();
+		if (Gun && !Gun->Def->bMelee && Gun->Ammo == 0) M->Reload();
+		// strafe a little (snipers hold still to stay "scoped")
+		if (!bSniper && Now >= NextStrafeAt)
 		{
 			NextStrafeAt = Now + Rng.FRandRange(0.8f, 1.8f);
 			const FVector Right = M->GetActorRightVector() * (Rng.FRand() < 0.5f ? 1.f : -1.f) * Rng.FRandRange(150.f, 350.f);
@@ -274,6 +392,37 @@ void ABotController::Think()
 
 	// ---- objectives
 	const EBombTeam Team = M->GetTeam();
+
+	// attackers: smoke the site and flash it before going in
+	if (Team == EBombTeam::Attackers && !bSiteNadesThrown && G->AttackSite && !GS->bBombPlanted)
+	{
+		const FVector SiteLoc = G->AttackSite->GetActorLocation();
+		const float DistM = FVector::Dist2D(SiteLoc, M->GetActorLocation()) / 100.f;
+		if (DistM < 30.f)
+		{
+			bSiteNadesThrown = true;
+			if (M->NadeCount(TEXT("smoke")) > 0) M->ThrowNadeTo(TEXT("smoke"), SiteLoc);
+			if (M->NadeCount(TEXT("flash")) > 0 && Rng.FRand() < 0.7f) M->ThrowNadeTo(TEXT("flash"), SiteLoc + FVector(0, 0, 100.f));
+			ChooseWeapon();
+		}
+	}
+
+	// fetching a dropped gun
+	if (Task == EBotTask::Fetch)
+	{
+		AWeaponPickup* Drop = TargetDrop.Get();
+		if (!Drop || M->HasMain()) { Task = EBotTask::Idle; }
+		else if (FVector::Dist(Drop->GetActorLocation(), M->GetActorLocation()) < 150.f)
+		{
+			M->TakeDroppedGun(Drop);
+			ChooseWeapon();
+			Task = EBotTask::Idle;
+		}
+		else
+		{
+			return;
+		}
+	}
 
 	// planting
 	if (Team == EBombTeam::Attackers && M->bHasBomb && !GS->bBombPlanted)
@@ -332,7 +481,6 @@ void ABotController::Think()
 	}
 	if (Task == EBotTask::Travel)
 	{
-		// stuck detection
 		const FVector Pos = M->GetActorLocation();
 		if (FVector::Dist2D(Pos, LastPos) > 60.f)
 		{
@@ -344,13 +492,10 @@ void ABotController::Think()
 			Task = EBotTask::Idle;
 			StopMovement();
 		}
-		// sprint on long trips
-		if (FVector::Dist2D(Pos, ObjectiveLoc) > 1500.f) M->StartSprint(); else M->StopSprint();
 		return;
 	}
 	if (Task == EBotTask::Hold)
 	{
-		M->StopSprint();
 		if (Now >= NextLookAt)
 		{
 			NextLookAt = Now + Rng.FRandRange(1.5f, 4.f);
