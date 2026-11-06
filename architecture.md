@@ -214,6 +214,31 @@ baked in from above (limitation).
      nav-system ticks before/after `Build()`; generation is synchronous and takes ~14 min because
      the collision is the full render geometry), save again.
 
+## Game rules (ported from FPS Reborn) — planned layout
+
+The match rules follow `_CODE/fps-reborn` (a browser FPS by the same user), rules only, no art direction:
+
+* `Weapons.h/.cpp` — the static roster (`FWeaponDef`: slot, price, fire rate, magazine, reserve, reload, range,
+  damage per body part, fall-off, spread, recoil, silenced, scope, 1P/3P mesh name) and `FGunState` (ammo,
+  reserve, cooldown, reload timer, spray index, recoil). The numbers are the FPS Reborn ones; only the names
+  and looks are new (realistic firearms).
+* `AFPSCharacter` — inventory (main / side / knife / grenades / bomb), active slot, kevlar, scope zoom, drop on
+  death; fire logic driven by the def (auto / semi, pellets, melee).
+* `ABombPlayerState` — money, loadout survival flag, round purchases (for sell-back).
+* `ABombGameMode` — economy (`ECON`), buy phase with spawn fence, round flow (100 s, win-by-two, overtime),
+  bomb hand-off rules for the human attacker, blast radius, drops cleared per round.
+* `AGrenadeActor` (smoke / flash / frag: bouncing projectile, fuse, effect), `AWeaponPickup` (dropped gun).
+* `ABombHUD` — buy menu drawn on the canvas with `AddHitBox` (mouse buy / sell-back), money, weapon, armour,
+  grenade pips.
+* `ABotController` — buying per the ported `_botsBuy`, grenade use, drop pickup.
+
+## User-supplied art (planned)
+
+`assets/models/<pack>/` holds user-supplied models (first: the *3 Piece Parisian Apartment Building* Blender
+pack). `tools/import_blender_assets.py` runs Blender headless to split a pack into named pieces as FBX with
+their textures; `build_level.py` imports them to `/Game/Models/<pack>/` and `build_map.py` places instances
+from `layout.json` (`models` section) like any prop. War-zone dressing lives in `layout.json` → `warzone`.
+
 ## Build / run
 
 See `README.md`. In short: `tools/ue/build_all.ps1` runs the Python pipeline, compiles the

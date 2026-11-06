@@ -6,7 +6,8 @@
 
 class UTextRenderComponent;
 
-/** Named map location ("Mid", "A Site", ...). Used by the HUD (nearest callout) and by bots as waypoints. */
+/** Named map location ("Mid", "A Site", ...). Used by the HUD (nearest callout) and by bots as waypoints.
+ *  The label turns to face the player's camera so it is never seen mirrored. */
 UCLASS()
 class PARISBOMBMAP_API ACalloutMarker : public AActor
 {
@@ -14,6 +15,7 @@ class PARISBOMBMAP_API ACalloutMarker : public AActor
 
 public:
 	ACalloutMarker();
+	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Callout")
 	FString CalloutName;
@@ -23,4 +25,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Callout")
 	void SetCallout(const FString& Name);
+
+private:
+	float NextFaceUpdate = 0.f;
 };

@@ -14,24 +14,31 @@
 
 FString ABombHUD::FormatTime(float Seconds)
 {
-	const int32 S = FMath::Max(0, FMath::CeilToInt(Seconds));
-	return FString::Printf(TEXT("%d:%02d"), S / 60, S % 60);
+	const int32 Sec = FMath::Max(0, FMath::CeilToInt(Seconds));
+	return FString::Printf(TEXT("%d:%02d"), Sec / 60, Sec % 60);
 }
 
-void ABombHUD::DrawTextAt(const FString& Text, float X, float Y, UFont* Font, float Scale, const FLinearColor& Color, bool bShadow)
-{
-	if (bShadow)
-	{
-		DrawText(Text, FLinearColor(0.f, 0.f, 0.f, 0.75f), X + 2.f, Y + 2.f, Font, Scale);
-	}
-	DrawText(Text, Color, X, Y, Font, Scale);
-}
-
-void ABombHUD::DrawCenteredText(const FString& Text, float CX, float Y, UFont* Font, float Scale, const FLinearColor& Color, bool bShadow)
+FVector2D ABombHUD::Measure(const FString& Str, float Px) const
 {
 	float W = 0.f, H = 0.f;
-	GetTextSize(Text, W, H, Font, Scale);
-	DrawTextAt(Text, CX - W * 0.5f, Y, Font, Scale, Color, bShadow);
+	const float Scale = Px * S / FontHeight;
+	const_cast<ABombHUD*>(this)->GetTextSize(Str, W, H, Font, Scale);
+	return FVector2D(W, H);
+}
+
+float ABombHUD::Text(const FString& Str, float X, float Y, float Px, const FLinearColor& Color, int32 Align, bool bShadow)
+{
+	const float Scale = Px * S / FontHeight;
+	const FVector2D Size = Measure(Str, Px);
+	if (Align == 1) X -= Size.X * 0.5f;
+	else if (Align == 2) X -= Size.X;
+	if (bShadow)
+	{
+		const float O = FMath::Max(1.5f, Px * S * 0.06f);
+		DrawText(Str, FLinearColor(0.f, 0.f, 0.f, 0.8f), X + O, Y + O, Font, Scale);
+	}
+	DrawText(Str, Color, X, Y, Font, Scale);
+	return Size.X;
 }
 
 void ABombHUD::DrawBar(float X, float Y, float W, float H, float Fraction, const FLinearColor& Fill, const FLinearColor& Back)
@@ -46,10 +53,15 @@ void ABombHUD::DrawHUD()
 	if (!Canvas) return;
 	const float W = Canvas->ClipX;
 	const float H = Canvas->ClipY;
-	const float S = FMath::Clamp(H / 1080.f, 0.6f, 1.6f);   // UI scale
-	UFont* Big = GEngine->GetLargeFont();
-	UFont* Med = GEngine->GetMediumFont();
-	UFont* Small = GEngine->GetSmallFont();
+	S = FMath::Clamp(H / 1080.f, 0.5f, 2.5f);
+	if (!Font)
+	{
+		Font = LoadObject<UFont>(nullptr, TEXT("/Engine/EngineFonts/Roboto.Roboto"));
+		if (!Font) Font = GEngine->GetLargeFont();
+		float TW = 0.f, TH = 0.f;
+		GetTextSize(TEXT("Hg"), TW, TH, Font, 1.f);
+		FontHeight = FMath::Max(1.f, TH);
+	}
 
 	ABombGameState* GS = GetWorld()->GetGameState<ABombGameState>();
 	ABombGameMode* GM = Cast<ABombGameMode>(UGameplayStatics::GetGameMode(this));
@@ -58,20 +70,24 @@ void ABombHUD::DrawHUD()
 	if (!GS) return;
 
 	const FLinearColor White(1.f, 1.f, 1.f);
-	const FLinearColor Dim(1.f, 1.f, 1.f, 0.6f);
-	const FLinearColor Panel(0.f, 0.f, 0.f, 0.45f);
+	const FLinearColor Dim(1.f, 1.f, 1.f, 0.7f);
+	const FLinearColor Panel(0.f, 0.f, 0.f, 0.5f);
 	const FLinearColor ColA = TeamColor(EBombTeam::Attackers);
 	const FLinearColor ColD = TeamColor(EBombTeam::Defenders);
+	const float Pad = 14.f * S;
 
 	// ---------------------------------------------------------------- top centre: scores + timer
 	{
-		const float PW = 420.f * S, PH = 64.f * S;
+		const float PW = 560.f * S, PH = 96.f * S;
 		const float PX = W * 0.5f - PW * 0.5f, PY = 12.f * S;
+		const float Side = 120.f * S;
 		DrawRect(Panel, PX, PY, PW, PH);
-		DrawRect(ColA * FLinearColor(1, 1, 1, 0.85f), PX, PY, 90.f * S, PH);
-		DrawRect(ColD * FLinearColor(1, 1, 1, 0.85f), PX + PW - 90.f * S, PY, 90.f * S, PH);
-		DrawCenteredText(FString::FromInt(GS->ScoreAttackers), PX + 45.f * S, PY + 8.f * S, Big, 2.0f * S, White);
-		DrawCenteredText(FString::FromInt(GS->ScoreDefenders), PX + PW - 45.f * S, PY + 8.f * S, Big, 2.0f * S, White);
+		DrawRect(ColA * FLinearColor(1, 1, 1, 0.85f), PX, PY, Side, PH);
+		DrawRect(ColD * FLinearColor(1, 1, 1, 0.85f), PX + PW - Side, PY, Side, PH);
+		Text(FString::FromInt(GS->ScoreAttackers), PX + Side * 0.5f, PY + 4.f * S, PX_BIG + 6.f, White, 1);
+		Text(FString::FromInt(GS->ScoreDefenders), PX + PW - Side * 0.5f, PY + 4.f * S, PX_BIG + 6.f, White, 1);
+		Text(TEXT("ATK"), PX + Side * 0.5f, PY + PH - 28.f * S, PX_SMALL, White, 1);
+		Text(TEXT("DEF"), PX + PW - Side * 0.5f, PY + PH - 28.f * S, PX_SMALL, White, 1);
 		FString Timer;
 		FLinearColor TimerCol = White;
 		if (GS->Phase == ERoundPhase::Live && GS->bBombPlanted)
@@ -87,10 +103,8 @@ void ABombHUD::DrawHUD()
 		{
 			Timer = TEXT("--:--");
 		}
-		DrawCenteredText(Timer, W * 0.5f, PY + 6.f * S, Big, 1.9f * S, TimerCol);
-		DrawCenteredText(FString::Printf(TEXT("ROUND %d   %d v %d alive"), GS->RoundNumber, GS->AliveAttackers, GS->AliveDefenders), W * 0.5f, PY + 42.f * S, Small, 1.0f * S, Dim);
-		DrawCenteredText(TEXT("ATK"), PX + 45.f * S, PY + PH - 16.f * S, Small, 0.9f * S, White);
-		DrawCenteredText(TEXT("DEF"), PX + PW - 45.f * S, PY + PH - 16.f * S, Small, 0.9f * S, White);
+		Text(Timer, W * 0.5f, PY + 2.f * S, PX_BIG, TimerCol, 1);
+		Text(FString::Printf(TEXT("ROUND %d    %d v %d alive"), GS->RoundNumber, GS->AliveAttackers, GS->AliveDefenders), W * 0.5f, PY + PH - 30.f * S, PX_SMALL, Dim, 1);
 	}
 
 	// ---------------------------------------------------------------- kill feed (top right)
@@ -99,11 +113,10 @@ void ABombHUD::DrawHUD()
 		for (int32 i = GS->KillFeed.Num() - 1; i >= 0; --i)
 		{
 			const auto& E = GS->KillFeed[i];
-			float TW = 0.f, TH = 0.f;
-			GetTextSize(E.Text, TW, TH, Med, 1.0f * S);
-			DrawRect(Panel, W - TW - 28.f * S, Y - 3.f * S, TW + 16.f * S, TH + 6.f * S);
-			DrawTextAt(E.Text, W - TW - 20.f * S, Y, Med, 1.0f * S, E.Color);
-			Y += TH + 8.f * S;
+			const FVector2D Sz = Measure(E.Text, PX_BODY);
+			DrawRect(Panel, W - Sz.X - Pad * 2.f - 10.f * S, Y - 4.f * S, Sz.X + Pad * 2.f, Sz.Y + 8.f * S);
+			Text(E.Text, W - Pad - 10.f * S, Y, PX_BODY, E.Color, 2);
+			Y += Sz.Y + 10.f * S;
 		}
 	}
 
@@ -124,20 +137,20 @@ void ABombHUD::DrawHUD()
 		}
 		if (!Banner.IsEmpty())
 		{
-			float TW = 0.f, TH = 0.f;
-			GetTextSize(Banner, TW, TH, Big, 1.4f * S);
-			DrawRect(Panel, W * 0.5f - TW * 0.5f - 24.f * S, H * 0.22f - 8.f * S, TW + 48.f * S, TH + 16.f * S);
-			DrawCenteredText(Banner, W * 0.5f, H * 0.22f, Big, 1.4f * S, BCol);
+			const FVector2D Sz = Measure(Banner, PX_BIG);
+			const float BY = H * 0.2f;
+			DrawRect(Panel, W * 0.5f - Sz.X * 0.5f - Pad * 2.f, BY - 8.f * S, Sz.X + Pad * 4.f, Sz.Y + 16.f * S);
+			Text(Banner, W * 0.5f, BY, PX_BIG, BCol, 1);
 			if (GS->Phase == ERoundPhase::Freeze)
 			{
 				const FString Obj = (Me && Me->GetTeam() == EBombTeam::Attackers) ? TEXT("Plant the bomb at A or B, or eliminate the defenders")
 				                                                                   : TEXT("Defend both sites. Defuse the bomb if it is planted");
-				DrawCenteredText(Obj, W * 0.5f, H * 0.22f + TH + 20.f * S, Med, 1.0f * S, Dim);
+				Text(Obj, W * 0.5f, BY + Sz.Y + 22.f * S, PX_BODY, Dim, 1);
 			}
 		}
 		if (GS->Phase == ERoundPhase::Live && GS->bBombPlanted)
 		{
-			DrawCenteredText(FString::Printf(TEXT("BOMB PLANTED AT %s"), *GS->PlantedSiteId), W * 0.5f, 92.f * S, Med, 1.1f * S, FLinearColor(1.f, 0.3f, 0.2f));
+			Text(FString::Printf(TEXT("BOMB PLANTED AT %s"), *GS->PlantedSiteId), W * 0.5f, 124.f * S, PX_MED, FLinearColor(1.f, 0.3f, 0.2f), 1);
 		}
 	}
 
@@ -146,8 +159,8 @@ void ABombHUD::DrawHUD()
 	{
 		// crosshair
 		const float CX = W * 0.5f, CY = H * 0.5f;
-		const float Gap = (4.f + Me->Spread * 4.f + Me->GetVelocity().Size2D() / 120.f) * S;
-		const float Len = 11.f * S;
+		const float Gap = (5.f + Me->Spread * 4.f + Me->GetVelocity().Size2D() / 120.f) * S;
+		const float Len = 12.f * S;
 		const float Now = GetWorld()->GetTimeSeconds();
 		const FLinearColor CH = (Now - Me->LastHitMarkerTime < 0.12f) ? FLinearColor(1.f, 0.3f, 0.2f) : FLinearColor(0.4f, 1.f, 0.4f);
 		const float Th = FMath::Max(2.f, 2.5f * S);
@@ -168,32 +181,41 @@ void ABombHUD::DrawHUD()
 		}
 
 		// health (bottom-left)
-		const float BX = 24.f * S, BY = H - 70.f * S;
-		DrawRect(Panel, BX - 8.f * S, BY - 8.f * S, 300.f * S, 60.f * S);
-		DrawTextAt(TEXT("HP"), BX, BY, Small, 1.0f * S, Dim);
-		DrawBar(BX + 30.f * S, BY + 2.f * S, 180.f * S, 16.f * S, Me->Health / 100.f, Me->Health > 30.f ? FLinearColor(0.3f, 0.9f, 0.3f) : FLinearColor(1.f, 0.3f, 0.2f), FLinearColor(0.f, 0.f, 0.f, 0.6f));
-		DrawTextAt(FString::FromInt(FMath::CeilToInt(Me->Health)), BX + 220.f * S, BY - 4.f * S, Big, 1.2f * S, White);
-		if (Me->bHasBomb)
 		{
-			DrawTextAt(TEXT("[C4]  you carry the bomb"), BX, BY + 26.f * S, Small, 1.0f * S, FLinearColor(1.f, 0.6f, 0.2f));
-		}
-		else if (GS->Phase == ERoundPhase::Live)
-		{
-			DrawTextAt(FString::Printf(TEXT("Team %s"), *TeamName(Me->GetTeam())), BX, BY + 26.f * S, Small, 1.0f * S, TeamColor(Me->GetTeam()));
+			const float PW = 400.f * S, PH = 100.f * S;
+			const float PX = 20.f * S, PY = H - PH - 20.f * S;
+			DrawRect(Panel, PX, PY, PW, PH);
+			Text(TEXT("HP"), PX + Pad, PY + 10.f * S, PX_SMALL, Dim);
+			DrawBar(PX + Pad + 50.f * S, PY + 14.f * S, 210.f * S, 22.f * S, Me->Health / 100.f, Me->Health > 30.f ? FLinearColor(0.3f, 0.9f, 0.3f) : FLinearColor(1.f, 0.3f, 0.2f), FLinearColor(0.f, 0.f, 0.f, 0.6f));
+			Text(FString::FromInt(FMath::CeilToInt(Me->Health)), PX + PW - Pad, PY + 2.f * S, PX_BIG, White, 2);
+			if (Me->bHasBomb)
+			{
+				Text(TEXT("[C4]  you carry the bomb"), PX + Pad, PY + PH - 38.f * S, PX_SMALL, FLinearColor(1.f, 0.6f, 0.2f));
+			}
+			else if (GS->Phase == ERoundPhase::Live)
+			{
+				Text(FString::Printf(TEXT("Team %s"), *TeamName(Me->GetTeam())), PX + Pad, PY + PH - 38.f * S, PX_SMALL, TeamColor(Me->GetTeam()));
+			}
 		}
 
 		// ammo (bottom-right)
-		const float AX = W - 230.f * S, AY = H - 70.f * S;
-		DrawRect(Panel, AX - 8.f * S, AY - 8.f * S, 215.f * S, 60.f * S);
-		DrawTextAt(FString::Printf(TEXT("%d"), Me->AmmoInMag), AX, AY - 6.f * S, Big, 1.6f * S, Me->AmmoInMag > 5 ? White : FLinearColor(1.f, 0.4f, 0.3f));
-		DrawTextAt(FString::Printf(TEXT("/ %d"), Me->AmmoReserve), AX + 80.f * S, AY + 6.f * S, Med, 1.0f * S, Dim);
-		DrawTextAt(Me->bReloading ? TEXT("RELOADING") : TEXT("RIFLE"), AX, AY + 30.f * S, Small, 1.0f * S, Me->bReloading ? FLinearColor::Yellow : Dim);
+		{
+			const float PW = 300.f * S, PH = 100.f * S;
+			const float PX = W - PW - 20.f * S, PY = H - PH - 20.f * S;
+			DrawRect(Panel, PX, PY, PW, PH);
+			const FString Mag = FString::Printf(TEXT("%d"), Me->AmmoInMag);
+			const float MW = Measure(Mag, PX_HUGE).X;
+			Text(Mag, PX + Pad, PY - 2.f * S, PX_HUGE, Me->AmmoInMag > 5 ? White : FLinearColor(1.f, 0.4f, 0.3f));
+			Text(FString::Printf(TEXT("/ %d"), Me->AmmoReserve), PX + Pad + MW + 12.f * S, PY + 22.f * S, PX_MED, Dim);
+			Text(Me->bReloading ? TEXT("RELOADING") : TEXT("RIFLE"), PX + PW - Pad, PY + PH - 36.f * S, PX_SMALL, Me->bReloading ? FLinearColor::Yellow : Dim, 2);
+		}
 
 		// callout + interaction hints (bottom centre)
 		FString Callout = GM ? GM->NearestCallout(Me->GetActorLocation()) : FString();
 		if (!Callout.IsEmpty())
 		{
-			DrawCenteredText(Callout.ToUpper(), W * 0.5f, H - 44.f * S, Med, 1.1f * S, Dim);
+			const bool bKeys = GS->Phase == ERoundPhase::Warmup || GS->Phase == ERoundPhase::Freeze;
+			Text(Callout.ToUpper(), W * 0.5f, H - (bKeys ? 110.f : 60.f) * S, PX_MED, Dim, 1);
 		}
 		if (GS->Phase == ERoundPhase::Live)
 		{
@@ -217,25 +239,28 @@ void ABombHUD::DrawHUD()
 			}
 			if (Me->bInteracting && Me->InteractProgress > 0.f)
 			{
-				DrawBar(W * 0.5f - 120.f * S, H * 0.5f + 60.f * S, 240.f * S, 18.f * S, Me->InteractProgress, FLinearColor(1.f, 0.6f, 0.1f), FLinearColor(0.f, 0.f, 0.f, 0.7f));
-				DrawCenteredText(Me->InteractHint, W * 0.5f, H * 0.5f + 82.f * S, Med, 1.0f * S, White);
+				DrawBar(W * 0.5f - 160.f * S, H * 0.5f + 70.f * S, 320.f * S, 24.f * S, Me->InteractProgress, FLinearColor(1.f, 0.6f, 0.1f), FLinearColor(0.f, 0.f, 0.f, 0.7f));
+				Text(Me->InteractHint, W * 0.5f, H * 0.5f + 100.f * S, PX_BODY, White, 1);
 			}
 			else if (!Hint.IsEmpty())
 			{
-				DrawCenteredText(Hint, W * 0.5f, H * 0.5f + 60.f * S, Med, 1.0f * S, FLinearColor::Yellow);
+				Text(Hint, W * 0.5f, H * 0.5f + 70.f * S, PX_BODY, FLinearColor::Yellow, 1);
 			}
 		}
 	}
 	else if (Me && Me->bDead)
 	{
-		DrawCenteredText(TEXT("YOU ARE DEAD"), W * 0.5f, H * 0.36f, Big, 1.6f * S, FLinearColor(1.f, 0.3f, 0.3f));
-		DrawCenteredText(TEXT("spectating a teammate until the next round"), W * 0.5f, H * 0.36f + 44.f * S, Med, 1.0f * S, Dim);
+		Text(TEXT("YOU ARE DEAD"), W * 0.5f, H * 0.34f, PX_HUGE, FLinearColor(1.f, 0.3f, 0.3f), 1);
+		Text(TEXT("spectating a teammate until the next round"), W * 0.5f, H * 0.34f + 80.f * S, PX_BODY, Dim, 1);
 	}
 
 	// controls reminder during warm-up / freeze
 	if (GS->Phase == ERoundPhase::Warmup || GS->Phase == ERoundPhase::Freeze)
 	{
-		DrawCenteredText(TEXT("WASD move   Shift sprint   Ctrl crouch   LMB fire   R reload   E plant/defuse   Tab scoreboard   M switch team"), W * 0.5f, H - 20.f * S, Small, 1.0f * S, Dim);
+		const FString Keys = TEXT("WASD move    Shift sprint    Ctrl crouch    LMB fire    R reload    E plant / defuse    Tab scoreboard    M switch team");
+		const FVector2D Sz = Measure(Keys, PX_SMALL);
+		DrawRect(Panel, W * 0.5f - Sz.X * 0.5f - Pad, H - Sz.Y - 24.f * S, Sz.X + Pad * 2.f, Sz.Y + 10.f * S);
+		Text(Keys, W * 0.5f, H - Sz.Y - 19.f * S, PX_SMALL, Dim, 1);
 	}
 
 	if (Me && Me->bShowScoreboard)
@@ -246,21 +271,18 @@ void ABombHUD::DrawHUD()
 
 void ABombHUD::DrawScoreboard(ABombGameState* GS, float W, float H)
 {
-	const float S = FMath::Clamp(H / 1080.f, 0.6f, 1.6f);
-	UFont* Med = GEngine->GetMediumFont();
-	UFont* Big = GEngine->GetLargeFont();
-	const float PW = 720.f * S, PH = 480.f * S;
+	const float PW = 980.f * S, PH = 620.f * S;
 	const float PX = W * 0.5f - PW * 0.5f, PY = H * 0.5f - PH * 0.5f;
-	DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.8f), PX, PY, PW, PH);
-	DrawCenteredText(FString::Printf(TEXT("ATTACKERS %d   -   %d DEFENDERS"), GS->ScoreAttackers, GS->ScoreDefenders), W * 0.5f, PY + 14.f * S, Big, 1.2f * S, FLinearColor::White);
+	DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.82f), PX, PY, PW, PH);
+	Text(FString::Printf(TEXT("ATTACKERS %d   -   %d DEFENDERS"), GS->ScoreAttackers, GS->ScoreDefenders), W * 0.5f, PY + 18.f * S, PX_BIG, FLinearColor::White, 1);
 	for (int32 T = 0; T < 2; ++T)
 	{
 		const EBombTeam Team = (EBombTeam)T;
-		const float ColX = PX + 24.f * S + T * PW * 0.5f;
-		float Y = PY + 70.f * S;
-		DrawTextAt(TeamName(Team), ColX, Y, Med, 1.1f * S, TeamColor(Team));
-		DrawTextAt(TEXT("K    D"), ColX + 230.f * S, Y, Med, 1.1f * S, FLinearColor(1, 1, 1, 0.6f));
-		Y += 30.f * S;
+		const float ColX = PX + 30.f * S + T * PW * 0.5f;
+		float Y = PY + 100.f * S;
+		Text(TeamName(Team), ColX, Y, PX_MED, TeamColor(Team));
+		Text(TEXT("K      D"), ColX + 300.f * S, Y, PX_MED, FLinearColor(1, 1, 1, 0.6f));
+		Y += 48.f * S;
 		TArray<ABombPlayerState*> List;
 		for (APlayerState* PS : GS->PlayerArray)
 		{
@@ -272,9 +294,9 @@ void ABombHUD::DrawScoreboard(ABombGameState* GS, float W, float H)
 		List.Sort([](const ABombPlayerState& A, const ABombPlayerState& B) { return A.Kills > B.Kills; });
 		for (ABombPlayerState* PS : List)
 		{
-			DrawTextAt(PS->GetPlayerName(), ColX, Y, Med, 1.0f * S, FLinearColor::White);
-			DrawTextAt(FString::Printf(TEXT("%d    %d"), PS->Kills, PS->Deaths), ColX + 230.f * S, Y, Med, 1.0f * S, FLinearColor::White);
-			Y += 26.f * S;
+			Text(PS->GetPlayerName(), ColX, Y, PX_BODY, FLinearColor::White);
+			Text(FString::Printf(TEXT("%d      %d"), PS->Kills, PS->Deaths), ColX + 300.f * S, Y, PX_BODY, FLinearColor::White);
+			Y += 38.f * S;
 		}
 	}
 }

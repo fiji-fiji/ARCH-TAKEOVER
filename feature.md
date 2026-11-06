@@ -40,6 +40,20 @@ Legend: ✅ done (verified in a run / on a screenshot) · 🟡 built, not yet ve
 | U10| Soldier + rifle models (generated low-poly meshes replacing the cylinder / sphere / cube stand-ins; 1P rifle with sights) | ✅ verified in game (`data/screenshot_soldier.png`) |
 | U11| Sound: synthesised rifle, reload, footsteps, hit, plant / defuse beeps, bomb timer, explosion, round jingles | ✅ built — 18 WAVs imported, no missing-sound warnings in a run; to hear in a playtest |
 | U12| No depth of field (FPS readability), dev switch `-pbm_lookmate` aims the auto-screenshot at a teammate | ✅ done |
+| U13| HUD readability: every text sized in pixels of a 1080p screen (22–64 px), callout labels face the player | ✅ verified (`data/screenshot_hud.png`) |
+| G1 | Weapon roster ported from FPS Reborn (rules only): 5 sidearms, 4 main guns, 2 snipers, knife — fire rate, magazine, reload, head / body / legs damage, fall-off, spread model, recoil pattern, silencer, scope | 🟡 planned |
+| G2 | Buy menu (B in the buy phase): cards per slot, mouse buy, right-click sell back, money / next-round minimum / countdown | 🟡 planned |
+| G3 | Economy: start 800, round win 3 000, loss 1 900 / 2 400 / 2 900 by streak, kill 200, plant 300, cap 9 000; survivors keep their guns, halftime reset | 🟡 planned |
+| G4 | Round flow as in FPS Reborn: 20 s buy phase (5 s in round 1) walking inside the spawn fence, 100 s round, 5 s result, first to 13 win-by-two, halftime after 12, overtime swaps every round, a plant in progress may finish at 0:00 | 🟡 planned |
+| G5 | Kevlar: light +25 / heavy +50 armour soaks damage first | 🟡 planned |
+| G6 | Grenades: smoke (15 s cloud), flash (blinds enemies looking at it), frag (6 m blast); 2 / 2 / 1 per round; Q / E / C quick-throw, 5 cycles | 🟡 planned |
+| G7 | Dropped guns: the main gun falls when you die, F picks it up or swaps, bots grab drops when unarmed; cleared each round | 🟡 planned |
+| G8 | Bomb carry: 4 selects the bomb; as an attacker it waits on the ground next to you at round start, bot teammates only take it after 10 s / when you leave spawn / when you die; hold 4 to plant / defuse | 🟡 planned |
+| G9 | Bots buy with the FPS Reborn logic (save when poor, rifles + kevlar when rich, pistol-round sidearms), use smokes / flashes on site hits and frags on seen enemies | 🟡 planned |
+| G10| HUD extensions: money + gain popup, weapon name and slot, armour, grenade pips, scoreboard money, kill feed with weapon | 🟡 planned |
+| G11| Generated gun models for the roster (realistic silhouettes, no flowers): pistols, revolver, machine pistol, sawn-off, SMG, pump shotgun, rifles, scout, long rifle, knife, three grenades | 🟡 planned |
+| A1 | Parisian building Blender asset (user-supplied 3-piece Haussmann block) imported with its textures, split into pieces | 🟡 planned |
+| A2 | War-zone dressing: ruined blocks from A1, rubble, sandbags, barricades, burnt cars, craters, smoke columns, overcast haze — the photo facades stay so the streets remain recognisable | 🟡 planned |
 | —  | Online play (replication)                                            | ❌ out of scope for now |
 
 ---
@@ -316,6 +330,90 @@ plant / defuse ticks, bomb beeps accelerating to the blast, explosion, round sta
 the game loads them by path (`UGameplayStatics::PlaySoundAtLocation` / `PlaySound2D`), so a missing file is
 silent rather than fatal.
 **Test:** fire, reload, walk, plant the bomb: each has a sound; the bomb beeps faster as the timer runs out.
+
+## U12. No depth of field + dev look-at switch — ✅
+**What:** `r.DepthOfFieldQuality=0` so the far end of the street stays sharp; `-pbm_lookmate` turns the
+auto-screenshot towards the nearest living teammate.
+**How:** `Config/DefaultEngine.ini`, `BombGameMode.cpp` (autoshot block).
+**Test:** `play.ps1 -AutoShot 3 -LookMate` → `data/screenshot_soldier.png`.
+
+## U13. HUD readability — ✅
+**What:** the user squints: the HUD used Unreal's 9–18 px engine fonts at scale 1. Every text is now sized in
+pixels of a 1080p screen (small 22, body 26, big 44, huge 64, scaled with the window height) using one
+distance-field font (crisp at any scale); panels widened to match. World callout labels enlarged too.
+**How:** `BombHUD.*` (`Px()` helper: scale = wanted pixels / font height), `CalloutMarker.cpp` world size.
+**Test:** 1920×1080 screenshot: the smallest text (controls reminder, kill feed) is ≥ 22 px tall.
+**Verified:** `data/screenshot_hud.png` (freeze time of round 1). The world callout labels (`ACalloutMarker`) now turn
+towards the camera every 0.1 s so they are never mirrored, and the HUD callout moves above the key bar during freeze.
+
+## G1–G11. Game rules ported from FPS Reborn — 🟡 planned
+**Source:** `_CODE/fps-reborn` (`js/modes.js`, `weapons.js`, `grenades.js`, `drops.js`, `shop.js`, `game.js`).
+Only the rules are taken; none of the art direction (no flowers, no bubbles, no cats): the guns are made-up
+realistic firearms.
+**What (per feature):**
+* G1 roster (name → FPS Reborn source, price, slot): P9 pistol (Dandelion, free), SO-12 sawn-off (Pansy Pump,
+  250), MP-11 machine pistol (Buzzy-11, 400), SP-7 suppressed pistol (Hush Daisy, 500), R-44 revolver (Cactus,
+  800); SMG-9 (Tulip Popper, 900), PS-12 pump shotgun (Sunflower Splash, 1 800), AR-7 rifle (Bloom Blaster,
+  2 900), AR-7S suppressed rifle (Hush Bloom, 2 900); SR-30 scout (Bluebell Scout, 950), LR-50 long rifle
+  (Lily Longshot, 4 500); combat knife (free, 1.5× move speed). Stats copied 1:1: auto / semi, fire rate,
+  magazine, reserve, reload time, range, head / body / legs damage, distance fall-off, spread (base + walk + run +
+  air, crouch multiplier, per-shot bloom, max), recoil kick pattern then sustained + side wobble, silenced
+  (quieter, no minimap ping — minimap not implemented), scope (right mouse, FOV 32 / 28, unscoped penalty).
+* G2 buy menu: B opens it during the buy phase (closes when the round goes live or you die); three columns
+  (sidearms / main guns / snipers) + kevlar + grenades, each card = name, price, Power / Speed / Range bars,
+  greyed when unaffordable, "owned" highlight; left click buys, right click sells back anything bought this
+  phase; header shows money, "next round at least …" and the countdown.
+* G3 economy (`ECON`): start 800, win 3 000, loss 1 900 → 2 400 → 2 900 by consecutive losses (reset on a win),
+  200 per kill, 300 to every attacker on a plant, cap 9 000. Players who died lose their loadout (survivors keep
+  it, ammo refilled); halftime resets everyone to 800 + pistol; this-phase purchases refunded when replaced.
+* G4 round flow: buy phase 20 s (round 1: 5 s) with free movement inside an invisible spawn fence, 100 s live,
+  5 s result screen, first to 13 with win-by-two (overtime beyond 24 rounds swaps sides every round), sides
+  swap after round 12, the round timer at 0:00 only ends the round once nobody is mid-plant.
+* G5 kevlar: light (400, +25) / heavy (1 000, +50) absorbs damage before health; a lower tier bought over a
+  higher one is refused.
+* G6 grenades: smoke (200, max 2, 1.3 s fuse, 3.6 m cloud for 15 s), flash (250, max 2, 0.9 s fuse, blinds for
+  up to 35 m when looked at), frag (400, max 1, 1.8 s fuse, 6 m radius, 130 max damage); they bounce; your own
+  never hurt your team. Keys: Q flash, E smoke, C frag (quick-throw: left click lob, right click under-hand),
+  5 cycles the ones you own.
+* G7 drops: on death the main gun falls (ammo kept) and anyone can take it: F within 2.2 m (swapping the one
+  held), bots walk over it within 14 m when they have no main gun; everything is cleared at round start.
+* G8 bomb carry: 4 selects the bomb (hold to plant inside A / B; defenders hold 4 next to it to defuse); when
+  the human attacks, the bomb waits on the ground in front of them at round start and bot teammates leave it
+  alone until 10 s after GO, until the human leaves spawn without it, or dies; the blast kills everyone within
+  10 m. Plant 4 s, fuse 45 s, defuse 7 s (unchanged).
+* G9 bots buy with the ported `_botsBuy` (weighted picks by money, saving rounds, pistol-round sidearms,
+  kevlar, attackers' smokes + flashes, occasional frag), throw a smoke and a flash when hitting a site, frag
+  enemies seen 5–25 m away, stand still to "scope".
+* G10 HUD: money (bottom-left, "+200" pop-up), weapon name + slot keys, kevlar, grenade pips, scoreboard
+  money column, kill feed "killer [weapon] victim" with a headshot mark.
+* G11 models: `tools/build_map.py` gains one generated mesh per gun / knife / grenade (box-built, realistic
+  proportions: slides, barrels, drum / box magazines, pump, suppressor cans, scopes) used in first person and
+  on the ground as drops.
+**How:** new `Weapons.h/.cpp` (static table + `FGunState`), `Inventory` on `AFPSCharacter` (slots main / side /
+knife / nade / bomb, kevlar, money moved to `ABombPlayerState`), `AGrenadeActor`, `AWeaponPickup`, buy menu drawn
+by `ABombHUD` with hit boxes, economy + flow in `ABombGameMode`, bot buying / nade use in `ABotController`.
+**Test:** B in the buy phase shows the menu; buying an AR-7 changes the 1P model and ammo; a kill shows +200;
+losing three rounds in a row pays 2 900; a dropped gun can be picked up with F; a flash whites the screen.
+
+## A1. Parisian building asset — 🟡 planned
+**What:** the user-supplied *3 Piece Parisian Apartment Building* (Blender / FBX / OBJ, 625 k vertices, 46 m ×
+18 m × 19 m, Downloads › *Parisian Building Blender Assets*, textures in `Textures.zip`) is copied into
+`assets/models/parisian_block/`, split by its named parts (walls, end walls, lower facade, windows, doors,
+balconies, roof, drain pipes) with Blender in the background, and imported into Unreal with its textures
+(painted plaster walls, terracotta roof, window planes).
+**How:** `tools/import_blender_assets.py` (runs `blender -b -P`), `build_level.py` FBX import block.
+**Test:** the block appears in the level with textures; the split pieces exist as separate static meshes.
+
+## A2. War-zone dressing — 🟡 planned
+**What:** the neighbourhood stays recognisable (photo facades, real ground, street layout) but reads as a
+front line: the A1 block pieces assembled into shelled / half-collapsed buildings on the empty lots and as
+facade chunks blocking some lanes, rubble piles, sandbag nests at the sites, Czech hedgehogs and concrete
+barricades on the boulevards, burnt-out cars, craters in the asphalt, smoke columns, dust haze and a cold
+overcast sun.
+**How:** `data/map/layout.json` `warzone` section (placements), `tools/build_map.py` new prop builders
+(rubble, sandbags, hedgehog, jersey barrier, burnt car, crater disc) + instances of the A1 pieces,
+`build_level.py` (haze / lighting / smoke particles as Niagara-free emissive planes).
+**Test:** screenshots from both spawns and the sites.
 
 ## Verification log
 
